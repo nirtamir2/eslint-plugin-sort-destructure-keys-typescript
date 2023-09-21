@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "esnext"
+  },
+  "include": ["estree.ts", "react.tsx"]
+}
