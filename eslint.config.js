@@ -12,10 +12,10 @@ export default nirtamir2(
   {
     ignores: ["vendor"],
   },
-)
-  // replace local config
-  // .onResolved((configs) => {
-  //   configs.forEach((config) => {
-  //     if (config?.plugins?.antfu) config.plugins.antfu = local;
-  //   });
-  // });
+).removeRules(["unicorn/no-empty-file"]);
+// replace local config
+// .onResolved((configs) => {
+//   configs.forEach((config) => {
+//     if (config?.plugins?.antfu) config.plugins.antfu = local;
+//   });
+// });

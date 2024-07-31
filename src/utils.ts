@@ -6,14 +6,12 @@ import type {
 import type { RuleContext } from "@typescript-eslint/utils/ts-eslint";
 import type { Rule } from "eslint";
 
-const hasDocs = [
-  "if-newline",
-];
+const hasDocs = new Set(["sort-destructure-keys-by-type"]);
 
 const blobUrl =
   "https://github.com/nirtamir2/eslint-plugin-sort-destructure-keys-typescript/blob/main/src/rules/";
 
-export interface RuleModule<T extends readonly unknown[]>
+export interface RuleModule<T extends ReadonlyArray<unknown>>
   extends Rule.RuleModule {
   defaultOptions: T;
 }
@@ -28,7 +26,7 @@ function RuleCreator(urlCreator: (name: string) => string) {
   // This function will get much easier to call when this is merged https://github.com/Microsoft/TypeScript/pull/26349
   // TODO - when the above PR lands; add type checking for the context.report `data` property
   return function createNamedRule<
-    TOptions extends readonly unknown[],
+    TOptions extends ReadonlyArray<Record<string, unknown>>,
     TMessageIds extends string,
   >({
     name,
@@ -57,7 +55,7 @@ function RuleCreator(urlCreator: (name: string) => string) {
  * @remarks It is generally better to provide a docs URL function to RuleCreator.
  */
 function createRule<
-  TOptions extends readonly unknown[],
+  TOptions extends ReadonlyArray<Record<string, unknown>>,
   TMessageIds extends string,
 >({
   create,
@@ -70,22 +68,25 @@ function createRule<
     ): RuleListener => {
       const optionsWithDefault = context.options.map((options, index) => {
         return {
-          ...(defaultOptions[index] || {}),
-          ...(options || {}),
+          ...defaultOptions[index],
+          ...options,
         };
       }) as unknown as TOptions;
       return create(context, optionsWithDefault);
-    }) as any,
+    }) as never,
     defaultOptions,
-    meta: meta as any,
+    meta: meta as never,
   };
 }
 
 export const createEslintRule = RuleCreator((ruleName) =>
-  hasDocs.includes(ruleName)
+  hasDocs.has(ruleName)
     ? `${blobUrl}${ruleName}.md`
     : `${blobUrl}${ruleName}.test.ts`,
-) as any as <TOptions extends readonly unknown[], TMessageIds extends string>({
+) as unknown as <
+  TOptions extends ReadonlyArray<unknown>,
+  TMessageIds extends string,
+>({
   name,
   meta,
   ...rule
