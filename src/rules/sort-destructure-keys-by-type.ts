@@ -49,7 +49,6 @@ export default createEslintRule<Options, MessageIds>({
     type: "layout",
     docs: {
       description: "Sort destructuring keys based on type order",
-      recommended: "stylistic",
     },
     fixable: "code",
     schema: [

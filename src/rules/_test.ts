@@ -1,5 +1,4 @@
 import tsParser from "@typescript-eslint/parser";
-import type { Linter } from "eslint";
 import type {
   RuleTesterInitOptions,
   TestCasesOptions,
@@ -8,7 +7,7 @@ import { run as _run } from "eslint-vitest-rule-tester";
 
 export function run(options: TestCasesOptions & RuleTesterInitOptions): void {
   _run({
-    parser: tsParser as Linter.ParserModule,
+    parser: tsParser as never,
     ...options,
   });
 }
