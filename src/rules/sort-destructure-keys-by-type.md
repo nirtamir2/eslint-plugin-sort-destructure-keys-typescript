@@ -1,6 +1,6 @@
 # sort-destructure-keys-by-type
 
-Keys in an object pattern should be sorted by the matching TypeScript type properties order
+Keys in an object pattern should be sorted by the matching TypeScript type properties order.
 
 💼 This rule is enabled in the ✅ `recommended` [config](https://github.com/nirtamir2/eslint-plugin-unicorn#preset-configs-eslintconfigjs).
 
@@ -44,12 +44,13 @@ Type: `object`
 
 Type: `Array<string>`
 
-Pass `{onlyTypes: ["Props"]}` to lint only types with matching names
+Pass `{onlyTypes: ["Props"]}` to apply this lint rule only types with matching names.
+Types without a name won't lint when using this config.
 
 #### Pass
 
 ```ts
-// eslint sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"onlyTypes": ["NotProps"]}]
+// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"onlyTypes": ["NotProps"]}]
 type Props = {
   name: string;
   email: string;
@@ -61,7 +62,7 @@ export function Example(props: Props) {
 ```
 
 ```ts
-// eslint sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"onlyTypes": []}]
+// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"onlyTypes": []}]
 type Props = {
   name: string;
   email: string;
@@ -72,10 +73,12 @@ export function Example(props: Props) {
 }
 ```
 
-### Fail
+#### Fail
+
+<!-- eslint-skip -->
 
 ```ts
-// eslint sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"onlyTypes": ["Props"]}]
+// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"onlyTypes": ["Props"]}]
 type Props = {
   name: string;
   email: string;
@@ -85,6 +88,8 @@ export function Example(props: Props) {
   const { email, name } = props;
 }
 ```
+
+<!-- eslint-skip -->
 
 ### ignoreTypes
 
@@ -95,7 +100,7 @@ Pass `{ignoreTypes: ["Props"]}` to lint only types with matching names
 #### Pass
 
 ```ts
-// eslint sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"ignoreTypes": ["Props"]}]
+// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"ignoreTypes": ["Props"]}]
 type Props = {
   name: string;
   email: string;
@@ -106,10 +111,12 @@ export function Example(props: Props) {
 }
 ```
 
-### Fail
+#### Fail
+
+<!-- eslint-skip -->
 
 ```ts
-// eslint sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"ignoreTypes": ["NotProps"]}]
+// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"ignoreTypes": ["NotProps"]}]
 type Props = {
   name: string;
   email: string;
@@ -121,7 +128,7 @@ export function Example(props: Props) {
 ```
 
 ```ts
-// eslint sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"ignoreTypes": []}]
+// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"ignoreTypes": []}]
 type Props = {
   name: string;
   email: string;
@@ -131,3 +138,5 @@ export function Example(props: Props) {
   const { email, name } = props;
 }
 ```
+
+<!-- eslint-skip -->
