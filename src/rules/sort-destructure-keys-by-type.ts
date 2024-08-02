@@ -53,23 +53,32 @@ export default createEslintRule<Options, MessageIds>({
     fixable: "code",
     schema: [
       {
-        type: "object",
-        maxProperties: 1,
-        properties: {
-          ignoreTypes: {
-            type: "array",
-            items: {
-              type: "string",
+        oneOf: [
+          {
+            type: "object",
+            properties: {
+              onlyTypes: {
+                type: "array",
+                items: {
+                  type: "string",
+                },
+              },
             },
+            additionalProperties: false,
           },
-          onlyTypes: {
-            type: "array",
-            items: {
-              type: "string",
+          {
+            type: "object",
+            properties: {
+              ignoreTypes: {
+                type: "array",
+                items: {
+                  type: "string",
+                },
+              },
             },
+            additionalProperties: false,
           },
-        },
-        additionalProperties: false,
+        ],
       },
     ],
     messages: {
