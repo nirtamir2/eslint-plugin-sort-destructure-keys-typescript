@@ -8,6 +8,7 @@
     "types": ["vitest/globals"],
     "strict": true,
     "strictNullChecks": true,
+    "noPropertyAccessFromIndexSignature": true,
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true

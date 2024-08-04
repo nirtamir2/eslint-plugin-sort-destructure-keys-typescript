@@ -103,7 +103,7 @@ export default createEslintRule<Options, MessageIds>({
             if (declaration.init?.type === AST_NODE_TYPES.Identifier) {
               const services = ESLintUtils.getParserServices(context);
               const type = services.getTypeAtLocation(declaration.init);
-              const typeName = type.symbol.escapedName;
+              const typeName = type.symbol?.escapedName;
 
               const shouldIgnoreType =
                 typeName == null ||
@@ -114,7 +114,7 @@ export default createEslintRule<Options, MessageIds>({
 
               if (!shouldIgnoreType)
                 for (const property of type.getProperties()) {
-                  if (typeof property.escapedName === "string") {
+                  if (typeof property?.escapedName === "string") {
                     typeDeclarationsOrder.push(property.escapedName);
                   }
                 }
