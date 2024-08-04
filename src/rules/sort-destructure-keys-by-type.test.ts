@@ -94,7 +94,7 @@ run({
       code: interfaceNameEmailUnsorted,
       options: [
         {
-          ignoreTypes: ["Props"],
+          typeNameRegex: "^(?!.*Props).*$",
         },
       ],
     },
@@ -102,7 +102,15 @@ run({
       code: interfaceNameEmailUnsorted,
       options: [
         {
-          onlyTypes: ["NotProps"],
+          typeNameRegex: "NotProps",
+        },
+      ],
+    },
+    {
+      code: anonymousEmailNameUnsorted,
+      options: [
+        {
+          includeAnonymousType: false,
         },
       ],
     },
@@ -143,9 +151,19 @@ run({
       errors: [{ messageId: "sort" }],
       options: [
         {
-          onlyTypes: ["Props"],
+          typeNameRegex: "Props",
         },
       ],
     },
+    {
+      code: anonymousEmailNameUnsorted,
+      output: anonymousEmailNameSorted,
+      errors: [{ messageId: "sort" }],
+      options: [
+        {
+          includeAnonymousType: true,
+        },
+      ],
+    }
   ],
 });

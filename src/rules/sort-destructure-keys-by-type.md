@@ -40,29 +40,49 @@ export function Example(props: Props) {
 
 Type: `object`
 
-### onlyTypes
+### includeAnonymousType
 
-Type: `Array<string>`
+Type: `boolean`
 
-Pass `{onlyTypes: ["Props"]}` to apply this lint rule only types with matching names.
-Types without a name won't lint when using this config.
+Pass `{includeAnonymousType: false}` to exclude this lint rule from running on anonymous types
+(without an identifier name, inline type)
+
+Default: `{includeAnonymousType: true}`
 
 #### Pass
 
 ```ts
-// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"onlyTypes": ["NotProps"]}]
-type Props = {
-  name: string;
-  email: string;
-};
+// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {includeAnonymousType: false}]}]
 
-export function Example(props: Props) {
+export function Example(props: { name: string; email: string }) {
   const { email, name } = props;
 }
 ```
 
+#### Fail
+
+<!-- eslint-skip -->
+
 ```ts
-// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"onlyTypes": []}]
+// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {includeAnonymousType: true}]}]
+
+export function Example(props: { name: string; email: string }) {
+  const { email, name } = props;
+}
+```
+
+<!-- eslint-skip -->
+
+### typeNameRegex
+
+Type: `string`
+
+Pass `{typeNameRegex: "Props|MyTypeName"}` to lint-only types that their name match the regex
+
+#### Pass
+
+```ts
+// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {typeNameRegex: "^(?!.*Props).*$"}]
 type Props = {
   name: string;
   email: string;
@@ -78,57 +98,7 @@ export function Example(props: Props) {
 <!-- eslint-skip -->
 
 ```ts
-// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"onlyTypes": ["Props"]}]
-type Props = {
-  name: string;
-  email: string;
-};
-
-export function Example(props: Props) {
-  const { email, name } = props;
-}
-```
-
-<!-- eslint-skip -->
-
-### ignoreTypes
-
-Type: `Array<string>`
-
-Pass `{ignoreTypes: ["Props"]}` to lint only types with matching names
-
-#### Pass
-
-```ts
-// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"ignoreTypes": ["Props"]}]
-type Props = {
-  name: string;
-  email: string;
-};
-
-export function Example(props: Props) {
-  const { email, name } = props;
-}
-```
-
-#### Fail
-
-<!-- eslint-skip -->
-
-```ts
-// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"ignoreTypes": ["NotProps"]}]
-type Props = {
-  name: string;
-  email: string;
-};
-
-export function Example(props: Props) {
-  const { email, name } = props;
-}
-```
-
-```ts
-// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {"ignoreTypes": []}]
+// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {typeNameRegex: "Props|Other"}]
 type Props = {
   name: string;
   email: string;

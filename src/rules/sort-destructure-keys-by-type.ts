@@ -53,32 +53,16 @@ export default createEslintRule<Options, MessageIds>({
     fixable: "code",
     schema: [
       {
-        oneOf: [
-          {
-            type: "object",
-            properties: {
-              onlyTypes: {
-                type: "array",
-                items: {
-                  type: "string",
-                },
-              },
-            },
-            additionalProperties: false,
+        type: "object",
+        properties: {
+          typeNameRegex: {
+            type: "string",
           },
-          {
-            type: "object",
-            properties: {
-              ignoreTypes: {
-                type: "array",
-                items: {
-                  type: "string",
-                },
-              },
-            },
-            additionalProperties: false,
+          includeAnonymousType: {
+            type: "boolean",
           },
-        ],
+        },
+        additionalProperties: false,
       },
     ],
     messages: {
@@ -88,11 +72,15 @@ export default createEslintRule<Options, MessageIds>({
   defaultOptions: [],
   create: (context) => {
     const options: {
-      ignoreTypes?: Array<string>;
-      onlyTypes?: Array<string>;
+      typeNameRegex?: string;
+      includeAnonymousType?: boolean;
+    } = Object.assign(
+      { includeAnonymousType: true },
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
-    } = context.options[0] ?? {};
+      context.options[0],
+    );
+
     return {
       VariableDeclaration(node) {
         for (const declaration of node.declarations) {
@@ -104,15 +92,12 @@ export default createEslintRule<Options, MessageIds>({
               const services = ESLintUtils.getParserServices(context);
               const type = services.getTypeAtLocation(declaration.init);
               const typeName = type.symbol?.escapedName;
-
-              const shouldIgnoreType =
-                typeName == null ||
-                (options.onlyTypes != null &&
-                  !options.onlyTypes.includes(typeName)) ||
-                (options.ignoreTypes != null &&
-                  options.ignoreTypes.includes(typeName));
-
-              if (!shouldIgnoreType)
+              if (
+                typeName == null || type.symbol.escapedName === "__type"
+                  ? options.includeAnonymousType
+                  : options.typeNameRegex == null ||
+                    new RegExp(options.typeNameRegex).test(typeName)
+              )
                 for (const property of type.getProperties()) {
                   if (typeof property?.escapedName === "string") {
                     typeDeclarationsOrder.push(property.escapedName);

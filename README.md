@@ -32,14 +32,6 @@ export default {
   },
   rules: {
     "sort-destructure-keys-typescript/sort-destructure-keys-by-type": "error",
-    // "sort-destructure-keys-typescript/sort-destructure-keys-by-type": [
-    //   "error",
-    //   { onlyTypes: ["Props"] },
-    // ],
-    // "sort-destructure-keys-typescript/sort-destructure-keys-by-type": [
-    //   "error",
-    //   { ignoreTypes: ["TypeToIgnore"] },
-    // ],
   },
 };
 ```
