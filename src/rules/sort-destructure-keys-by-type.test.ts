@@ -81,6 +81,47 @@ name: string;
 const { email, name } = props;
 }`;
 
+const typeIntersectionSorted = `type Props = {
+email: string;
+name: string;
+}
+
+export function Example(props: Props & {a: string}) {
+const { email, name, a } = props;
+}`;
+
+const typeIntersectionUnsorted = `type Props = {
+email: string;
+name: string;
+}
+
+export function Example(props: Props & {a: string}) {
+const { email, a, name } = props;
+}`;
+
+const interfaceExtendsSorted = `
+type A = {a: string};
+
+interface Props extends A {
+email: string;
+name: string;
+}
+
+export function Example(props: Props) {
+const { email, name, a } = props;
+}`;
+
+const interfaceExtendsUnsorted = `
+type A = {a: string};
+
+interface Props extends A {
+email: string;
+name: string;
+}
+
+export function Example(props: Props) {
+const { email, a, name } = props;
+}`;
 run({
   name: RULE_NAME,
   rule,
@@ -114,6 +155,8 @@ run({
         },
       ],
     },
+    typeIntersectionSorted,
+    interfaceExtendsSorted,
   ],
   parserOptions: {
     project: "./tsconfig.json",
@@ -146,6 +189,16 @@ run({
       errors: [{ messageId: "sort" }],
     },
     {
+      code: typeIntersectionUnsorted,
+      output: typeIntersectionSorted,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      code: interfaceExtendsUnsorted,
+      output: interfaceExtendsSorted,
+      errors: [{ messageId: "sort" }],
+    },
+    {
       code: interfaceNameEmailUnsorted,
       output: interfaceNameEmailSorted,
       errors: [{ messageId: "sort" }],
@@ -164,6 +217,6 @@ run({
           includeAnonymousType: true,
         },
       ],
-    }
+    },
   ],
 });
