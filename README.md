@@ -3,8 +3,9 @@
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 
-ESLint plugin rules to sort destructure keys by typescript type order.
-This rule requires `parserServices` to be generated. You must therefore provide a value for the "parserOptions.project" property for `@typescript-eslint/parser`.
+ESLint plugin rules to sort destructure keys by TypeScript type order.
+This rule requires `parserServices` to be generated.
+You must therefore provide a value for the `parserOptions.project` property for `@typescript-eslint/parser`.
 
 ![demo.gif](demo.gif)
 
@@ -19,21 +20,23 @@ pnpm add -D eslint-plugin-sort-destructure-keys-typescript
 Add to your `eslint.config.js`
 
 ```js
-export default {
-  files: ["**/*.?([cm])tsx", "**/*.?([cm])ts"],
-  languageOptions: {
-    parserOptions: {
-      project: true,
-      tsconfigRootDir: import.meta.dirname,
+import typescriptEslintParser from "@typescript-eslint/parser";
+import sortDestructureKeysConfig from "eslint-plugin-sort-destructure-keys-typescript/config";
+
+export default [
+  // other settings...
+  {
+    // set up typescript-eslint
+    languageOptions: {
+      parser: typescriptEslintParser,
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
   },
-  plugins: {
-    "sort-destructure-keys-typescript": sortDestructureKeysPlugin,
-  },
-  rules: {
-    "sort-destructure-keys-typescript/sort-destructure-keys-by-type": "error",
-  },
-};
+  sortDestructureKeysConfig(),
+];
 ```
 
 ## License
@@ -49,5 +52,7 @@ export default {
 
 ### Thanks
 
-- https://github.com/antfu/eslint-plugin-antfu for starter project
+- https://github.com/antfu/eslint-plugin-antfu for a starter project
+- https://github.com/antfu/eslint-plugin-command for a starter project
+- https://github.com/JoshuaKGoldberg/eslint-plugin-package-json for a starter project
 - https://github.com/mthadley/eslint-plugin-sort-destructure-keys - for ordering
