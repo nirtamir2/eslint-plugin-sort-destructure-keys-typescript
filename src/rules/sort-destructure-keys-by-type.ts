@@ -176,30 +176,6 @@ function reportError({
           context.sourceCode.getText(result.value.parent),
         ),
       ];
-
-      //
-      // if (
-      //   result.value.parent.type === AST_NODE_TYPES.Property &&
-      //   result.shouldBeBefore.parent.type === AST_NODE_TYPES.Property &&
-      //   //
-      //   result.value.parent.value.type === AST_NODE_TYPES.ObjectPattern &&
-      //   result.shouldBeBefore.parent.value.type === AST_NODE_TYPES.ObjectPattern
-      // ) {
-      //   return [
-      //     fixer.replaceTextRange(
-      //       result.value.parent.range,
-      //       context.sourceCode.getText(result.shouldBeBefore.parent),
-      //     ),
-      //     fixer.replaceTextRange(
-      //       result.shouldBeBefore.parent.range,
-      //       context.sourceCode.getText(result.value.parent),
-      //     ),
-      //   ];
-      // }
-      // return [
-      //   fixer.replaceText(result.value, result.shouldBeBefore.name),
-      //   fixer.replaceText(result.shouldBeBefore, result.value.name),
-      // ];
     },
   });
 }
