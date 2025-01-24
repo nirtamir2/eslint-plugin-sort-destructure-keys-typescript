@@ -199,6 +199,185 @@ run({
       errors: [{ messageId: "sort" }],
     },
     {
+      description: "nested",
+      code: `type Nested = {
+  a1: { a21: string; a22: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    a1: { a22, a21 },
+  } = props;
+}
+`,
+      output: `type Nested = {
+  a1: { a21: string; a22: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    a1: { a21, a22 },
+  } = props;
+}
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      description: "deep nested",
+      code: `type Nested = {
+  a1: { a21: { a31: string; a32: string; } };
+};
+
+export function Example(props: Nested) {
+  const {
+    a1: { a21: { a32, a31 } },
+  } = props;
+}
+`,
+      output: `type Nested = {
+  a1: { a21: { a31: string; a32: string; } };
+};
+
+export function Example(props: Nested) {
+  const {
+    a1: { a21: { a31, a32 } },
+  } = props;
+}
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      description: "nested integration",
+      code: `type Nested = {
+    a1: {
+        a1b1: { a1b1c1: string; a1b1c2: string };
+        a1b2: { a1b2c1: string; a1b2c2: string };
+    };
+    a2: {
+        a2b1: { a2b1c1: string; a2b1c2: string };
+        a2b2: { a2b2c1: string; a2b2c2: string };
+    };
+};
+
+export function Example(props: Nested) {
+    const {
+        a2: { a2b2, a2b1 },
+        a1: { a1b2, a1b1 },
+    } = props;
+}
+`,
+      output: `type Nested = {
+    a1: {
+        a1b1: { a1b1c1: string; a1b1c2: string };
+        a1b2: { a1b2c1: string; a1b2c2: string };
+    };
+    a2: {
+        a2b1: { a2b1c1: string; a2b1c2: string };
+        a2b2: { a2b2c1: string; a2b2c2: string };
+    };
+};
+
+export function Example(props: Nested) {
+    const {
+        a1: { a1b1, a1b2 },
+        a2: { a2b1, a2b2 },
+    } = props;
+}
+`,
+      errors: [
+        { messageId: "sort" },
+        { messageId: "sort" },
+        { messageId: "sort" },
+      ],
+    },    {
+      description: "nested root order not organized",
+      code: `type Nested = {
+  a1: { a21: string; a22: string };
+  b1: { b21: string; b22: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    b1: { b22, b21 },
+    a1: { a22, a21 },
+  } = props;
+}
+`,
+      output: `type Nested = {
+  a1: { a21: string; a22: string };
+  b1: { b21: string; b22: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    a1: { a21, a22 },
+    b1: { b21, b22 },
+  } = props;
+}
+`,
+      errors: [
+        { messageId: "sort" },
+        { messageId: "sort" },
+        { messageId: "sort" },
+      ],
+    },
+    {
+      description: "nested only inside not organized",
+      code: `type Nested = {
+  a1: { a21: string; a22: string };
+  b1: { b21: string; b22: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    b1: { b21 },
+    a1: { a21 },
+  } = props;
+}
+`,
+      output: `type Nested = {
+  a1: { a21: string; a22: string };
+  b1: { b21: string; b22: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    a1: { a21 },
+    b1: { b21 },
+  } = props;
+}
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      description: "nested root organized but outer is not organized",
+      code: `type Nested = {
+  a1: { a21: string; a22: string };
+  b1: { b21: string; b22: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    b1: { b21, b22 },
+    a1: { a21, a22 },
+  } = props;
+}
+`,
+      output: `type Nested = {
+  a1: { a21: string; a22: string };
+  b1: { b21: string; b22: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    a1: { a21, a22 },
+    b1: { b21, b22 },
+  } = props;
+}
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
       code: interfaceNameEmailUnsorted,
       output: interfaceNameEmailSorted,
       errors: [{ messageId: "sort" }],
