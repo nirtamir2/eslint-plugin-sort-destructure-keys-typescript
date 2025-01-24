@@ -127,10 +127,6 @@ function checkNestedProperty({
     }
     if (nestedProperty.value.type === AST_NODE_TYPES.ObjectPattern) {
       checkNestedProperty({ property: nestedProperty, context, options });
-      // // Try
-      // if (nestedProperty.key.type === AST_NODE_TYPES.Identifier) {
-      //   nestedDestructuringVariableDeclarations.push(nestedProperty.key);
-      // }
     } else if (nestedProperty.value.type === AST_NODE_TYPES.Identifier) {
       nestedDestructuringVariableDeclarations.push(nestedProperty.value);
     }
@@ -233,7 +229,6 @@ export default createEslintRule<Options, MessageIds>({
               if (property.type === AST_NODE_TYPES.Property) {
                 if (property.value.type === AST_NODE_TYPES.ObjectPattern) {
                   checkNestedProperty({ property, context, options });
-                  // Try
                   if (property.key.type === AST_NODE_TYPES.Identifier) {
                     destructuringVariableDeclarations.push(property.key);
                   }
