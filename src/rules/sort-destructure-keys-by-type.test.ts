@@ -199,6 +199,155 @@ run({
       errors: [{ messageId: "sort" }],
     },
     {
+      description: "nested object destructuring",
+      code: `type Nested = {
+  parent: { firstChild: string; secondChild: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    parent: { secondChild, firstChild },
+  } = props;
+}
+`,
+      output: `type Nested = {
+  parent: { firstChild: string; secondChild: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    parent: { firstChild, secondChild },
+  } = props;
+}
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      description: "deeply nested object destructuring",
+      code: `type DeepNestedObject = {
+    parent: { child: { firstGrandChild: string; secondGrandChild: string } };
+  };
+
+  export function DisplayDeepNestedValues(props: DeepNestedObject) {
+    const {
+      parent: { child: { secondGrandChild, firstGrandChild } },
+    } = props;
+  }
+`,
+      output: `type DeepNestedObject = {
+    parent: { child: { firstGrandChild: string; secondGrandChild: string } };
+  };
+
+  export function DisplayDeepNestedValues(props: DeepNestedObject) {
+    const {
+      parent: { child: { firstGrandChild, secondGrandChild } },
+    } = props;
+  }
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      description: "nested integration with sorted destructuring",
+      code: `type NestedStructure = {
+    group1: {
+        subgroup1: { item1: string; item2: string };
+        subgroup2: { item3: string; item4: string };
+    };
+    group2: {
+        subgroup3: { item5: string; item6: string };
+        subgroup4: { item7: string; item8: string };
+    };
+};
+
+export function DisplayNestedStructure(props: NestedStructure) {
+    const {
+        group2: { subgroup4, subgroup3 },
+        group1: { subgroup2, subgroup1 },
+    } = props;
+}
+`,
+      output: `type NestedStructure = {
+    group1: {
+        subgroup1: { item1: string; item2: string };
+        subgroup2: { item3: string; item4: string };
+    };
+    group2: {
+        subgroup3: { item5: string; item6: string };
+        subgroup4: { item7: string; item8: string };
+    };
+};
+
+export function DisplayNestedStructure(props: NestedStructure) {
+    const {
+        group1: { subgroup1, subgroup2 },
+        group2: { subgroup3, subgroup4 },
+    } = props;
+}
+`,
+      errors: [
+        { messageId: "sort" },
+        { messageId: "sort" },
+        { messageId: "sort" },
+      ],
+    },
+    {
+      description: "nested properties sorted only inside destructuring",
+      code: `type Nested = {
+  a1: { a21: string; a22: string };
+  b1: { b21: string; b22: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    b1: { b21 },
+    a1: { a21 },
+  } = props;
+}
+`,
+      output: `type Nested = {
+  a1: { a21: string; a22: string };
+  b1: { b21: string; b22: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    a1: { a21 },
+    b1: { b21 },
+  } = props;
+}
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      description:
+        "nested properties organized but parent destructuring order corrected",
+      code: `type Nested = {
+  a1: { a21: string; a22: string };
+  b1: { b21: string; b22: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    b1: { b21, b22 },
+    a1: { a21, a22 },
+  } = props;
+}
+`,
+      output: `type Nested = {
+  a1: { a21: string; a22: string };
+  b1: { b21: string; b22: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    a1: { a21, a22 },
+    b1: { b21, b22 },
+  } = props;
+}
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
       code: interfaceNameEmailUnsorted,
       output: interfaceNameEmailSorted,
       errors: [{ messageId: "sort" }],

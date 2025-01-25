@@ -1,5 +1,6 @@
 import type { TSESTree } from "@typescript-eslint/types";
 import { AST_NODE_TYPES, ESLintUtils } from "@typescript-eslint/utils";
+import type * as TSESLint from "@typescript-eslint/utils/ts-eslint";
 import { createEslintRule } from "../utils";
 
 export const RULE_NAME = "sort-destructure-keys-by-type";
@@ -41,6 +42,138 @@ function checkOrder({
   }
 
   return { type: "success" };
+}
+
+function getTypeDeclarationOrder({
+  declaration,
+  context,
+  options,
+}: {
+  declaration:
+    | TSESTree.LetOrConstOrVarDeclarator
+    | TSESTree.UsingInForOfDeclarator
+    | TSESTree.UsingInNomalConextDeclarator;
+  context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
+  options: { typeNameRegex?: string; includeAnonymousType?: boolean };
+}) {
+  const typeDeclarationsOrder: Array<string> = [];
+  if (declaration.init?.type === AST_NODE_TYPES.Identifier) {
+    const services = ESLintUtils.getParserServices(context);
+    const type = services.getTypeAtLocation(declaration.init);
+    const typeName = type.symbol?.escapedName;
+    if (
+      typeName == null || type.symbol.escapedName === "__type"
+        ? options.includeAnonymousType
+        : options.typeNameRegex == null ||
+          new RegExp(options.typeNameRegex).test(typeName)
+    )
+      for (const property of type.getProperties()) {
+        if (typeof property?.escapedName === "string") {
+          typeDeclarationsOrder.push(property.escapedName);
+        }
+      }
+  }
+  return typeDeclarationsOrder;
+}
+
+function getTypeDeclarationNestedOrder({
+  declaration,
+  context,
+  options,
+}: {
+  declaration: TSESTree.Property | TSESTree.RestElement;
+  context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
+  options: { typeNameRegex?: string; includeAnonymousType?: boolean };
+}) {
+  const typeDeclarationsOrder: Array<string> = [];
+  const services = ESLintUtils.getParserServices(context);
+  const type = services.getTypeAtLocation(declaration);
+  const typeName = type.symbol?.escapedName;
+  if (
+    typeName == null || type.symbol.escapedName === "__type"
+      ? options.includeAnonymousType
+      : options.typeNameRegex == null ||
+        new RegExp(options.typeNameRegex).test(typeName)
+  )
+    for (const property of type.getProperties()) {
+      if (typeof property?.escapedName === "string") {
+        typeDeclarationsOrder.push(property.escapedName);
+      }
+    }
+  return typeDeclarationsOrder;
+}
+
+function checkNestedProperty({
+  property,
+  context,
+  options,
+}: {
+  property: TSESTree.Property | TSESTree.RestElement;
+  context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
+  options: { typeNameRegex?: string; includeAnonymousType?: boolean };
+}) {
+  if (
+    property.value == null ||
+    property.value.type !== AST_NODE_TYPES.ObjectPattern
+  ) {
+    return;
+  }
+  const nestedDestructuringVariableDeclarations: Array<TSESTree.Identifier> =
+    [];
+
+  for (const nestedProperty of property.value.properties) {
+    if (nestedProperty.value == null) {
+      continue;
+    }
+    if (nestedProperty.value.type === AST_NODE_TYPES.ObjectPattern) {
+      checkNestedProperty({ property: nestedProperty, context, options });
+    } else if (nestedProperty.value.type === AST_NODE_TYPES.Identifier) {
+      nestedDestructuringVariableDeclarations.push(nestedProperty.value);
+    }
+  }
+  const result = checkOrder({
+    order: getTypeDeclarationNestedOrder({
+      declaration: property,
+      context,
+      options,
+    }),
+    values: nestedDestructuringVariableDeclarations,
+  });
+  if (result.type === "lintError") {
+    reportError({ context, result });
+  }
+}
+
+function reportError({
+  context,
+  result,
+}: {
+  context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
+  result: {
+    value: TSESTree.Identifier;
+    shouldBeBefore: TSESTree.Identifier;
+  };
+}) {
+  context.report({
+    node: result.value,
+    messageId: "sort",
+    data: {
+      first: result.shouldBeBefore.name,
+      second: result.value.name,
+    },
+    fix: (fixer) => {
+      return [
+        fixer.replaceTextRange(
+          result.value.parent.range,
+          context.sourceCode.getText(result.shouldBeBefore.parent),
+        ),
+        fixer.replaceTextRange(
+          result.shouldBeBefore.parent.range,
+          context.sourceCode.getText(result.value.parent),
+        ),
+      ];
+    },
+  });
 }
 
 export default createEslintRule<Options, MessageIds>({
@@ -87,29 +220,21 @@ export default createEslintRule<Options, MessageIds>({
           if (declaration.id.type === AST_NODE_TYPES.ObjectPattern) {
             const destructuringVariableDeclarations: Array<TSESTree.Identifier> =
               [];
-            const typeDeclarationsOrder: Array<string> = [];
-            if (declaration.init?.type === AST_NODE_TYPES.Identifier) {
-              const services = ESLintUtils.getParserServices(context);
-              const type = services.getTypeAtLocation(declaration.init);
-              const typeName = type.symbol?.escapedName;
-              if (
-                typeName == null || type.symbol.escapedName === "__type"
-                  ? options.includeAnonymousType
-                  : options.typeNameRegex == null ||
-                    new RegExp(options.typeNameRegex).test(typeName)
-              )
-                for (const property of type.getProperties()) {
-                  if (typeof property?.escapedName === "string") {
-                    typeDeclarationsOrder.push(property.escapedName);
-                  }
-                }
-            }
+            const typeDeclarationsOrder = getTypeDeclarationOrder({
+              declaration,
+              context,
+              options,
+            });
             for (const property of declaration.id.properties) {
-              if (
-                property.type === AST_NODE_TYPES.Property &&
-                property.value.type === AST_NODE_TYPES.Identifier
-              ) {
-                destructuringVariableDeclarations.push(property.value);
+              if (property.type === AST_NODE_TYPES.Property) {
+                if (property.value.type === AST_NODE_TYPES.ObjectPattern) {
+                  checkNestedProperty({ property, context, options });
+                  if (property.key.type === AST_NODE_TYPES.Identifier) {
+                    destructuringVariableDeclarations.push(property.key);
+                  }
+                } else if (property.value.type === AST_NODE_TYPES.Identifier) {
+                  destructuringVariableDeclarations.push(property.value);
+                }
               }
             }
             const result = checkOrder({
@@ -117,20 +242,7 @@ export default createEslintRule<Options, MessageIds>({
               values: destructuringVariableDeclarations,
             });
             if (result.type === "lintError") {
-              context.report({
-                node: result.value,
-                messageId: "sort",
-                data: {
-                  first: result.shouldBeBefore.name,
-                  second: result.value.name,
-                },
-                fix: (fixer) => {
-                  return [
-                    fixer.replaceText(result.value, result.shouldBeBefore.name),
-                    fixer.replaceText(result.shouldBeBefore, result.value.name),
-                  ];
-                },
-              });
+              reportError({ context, result });
             }
           }
         }
