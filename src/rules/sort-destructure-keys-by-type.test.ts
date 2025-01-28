@@ -122,6 +122,25 @@ name: string;
 export function Example(props: Props) {
 const { email, a, name } = props;
 }`;
+
+const interfaceNameEmailWithDefaultValueUnsorted = `interface Props {
+name: string;
+email: string;
+}
+
+export function Example(props: Props) {
+const { email = "defaultEmail", name } = props;
+}`;
+
+const interfaceNameEmailWithDefaultValueSorted = `interface Props {
+name: string;
+email: string;
+}
+
+export function Example(props: Props) {
+const { name, email = "defaultEmail" } = props;
+}`;
+
 run({
   name: RULE_NAME,
   rule,
@@ -166,6 +185,11 @@ run({
     {
       code: interfaceNameEmailUnsorted,
       output: interfaceNameEmailSorted,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      code: interfaceNameEmailWithDefaultValueUnsorted,
+      output: interfaceNameEmailWithDefaultValueSorted,
       errors: [{ messageId: "sort" }],
     },
     {
@@ -217,6 +241,30 @@ export function Example(props: Nested) {
 export function Example(props: Nested) {
   const {
     parent: { firstChild, secondChild },
+  } = props;
+}
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      description: "nested object destructuring with default value",
+      code: `type Nested = {
+  parent: { firstChild: string; secondChild: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    parent: { secondChild = "default", firstChild },
+  } = props;
+}
+`,
+      output: `type Nested = {
+  parent: { firstChild: string; secondChild: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    parent: { firstChild, secondChild = "default" },
   } = props;
 }
 `,

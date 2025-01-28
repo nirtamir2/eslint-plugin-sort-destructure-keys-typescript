@@ -125,10 +125,22 @@ function checkNestedProperty({
     if (nestedProperty.value == null) {
       continue;
     }
-    if (nestedProperty.value.type === AST_NODE_TYPES.ObjectPattern) {
-      checkNestedProperty({ property: nestedProperty, context, options });
-    } else if (nestedProperty.value.type === AST_NODE_TYPES.Identifier) {
-      nestedDestructuringVariableDeclarations.push(nestedProperty.value);
+    switch (nestedProperty.value.type) {
+      case AST_NODE_TYPES.ObjectPattern: {
+        checkNestedProperty({ property: nestedProperty, context, options });
+        break;
+      }
+      case AST_NODE_TYPES.Identifier: {
+        nestedDestructuringVariableDeclarations.push(nestedProperty.value);
+        break;
+      }
+      case AST_NODE_TYPES.AssignmentPattern: {
+        const leftProperty = nestedProperty.value.left;
+        if (leftProperty.type === AST_NODE_TYPES.Identifier) {
+          nestedDestructuringVariableDeclarations.push(leftProperty);
+        }
+        break;
+      }
     }
   }
   const result = checkOrder({
@@ -227,13 +239,25 @@ export default createEslintRule<Options, MessageIds>({
             });
             for (const property of declaration.id.properties) {
               if (property.type === AST_NODE_TYPES.Property) {
-                if (property.value.type === AST_NODE_TYPES.ObjectPattern) {
-                  checkNestedProperty({ property, context, options });
-                  if (property.key.type === AST_NODE_TYPES.Identifier) {
-                    destructuringVariableDeclarations.push(property.key);
+                switch (property.value.type) {
+                  case AST_NODE_TYPES.ObjectPattern: {
+                    checkNestedProperty({ property, context, options });
+                    if (property.key.type === AST_NODE_TYPES.Identifier) {
+                      destructuringVariableDeclarations.push(property.key);
+                    }
+                    break;
                   }
-                } else if (property.value.type === AST_NODE_TYPES.Identifier) {
-                  destructuringVariableDeclarations.push(property.value);
+                  case AST_NODE_TYPES.Identifier: {
+                    destructuringVariableDeclarations.push(property.value);
+                    break;
+                  }
+                  case AST_NODE_TYPES.AssignmentPattern: {
+                    const leftProperty = property.value.left;
+                    if (leftProperty.type === AST_NODE_TYPES.Identifier) {
+                      destructuringVariableDeclarations.push(leftProperty);
+                    }
+                    break;
+                  }
                 }
               }
             }
