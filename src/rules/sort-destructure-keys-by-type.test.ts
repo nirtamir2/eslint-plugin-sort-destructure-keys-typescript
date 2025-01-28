@@ -144,6 +144,10 @@ const { name, email = "defaultEmail" } = props;
 run({
   name: RULE_NAME,
   rule,
+  parserOptions: {
+    project: "./tsconfig.json",
+    tsconfigRootDir: `${import.meta.dirname}/fixtures`,
+  },
   valid: [
     interfaceNameEmailSorted,
     interfaceEmailNameSorted,
@@ -177,10 +181,6 @@ run({
     typeIntersectionSorted,
     interfaceExtendsSorted,
   ],
-  parserOptions: {
-    project: "./tsconfig.json",
-    tsconfigRootDir: `${import.meta.dirname}/fixtures`,
-  },
   invalid: [
     {
       code: interfaceNameEmailUnsorted,
