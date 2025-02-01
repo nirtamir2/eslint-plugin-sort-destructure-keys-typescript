@@ -34,7 +34,7 @@ function checkOrder({
     }
 
     if (index < lastIndex && lastValue != null) {
-      return { type: "lintError", value, shouldBeBefore: lastValue };
+      return { type: "lintError", value: lastValue, shouldBeBefore: value };
     }
 
     lastIndex = index;
