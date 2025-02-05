@@ -94,12 +94,25 @@ function getTypeDeclarationNestedOrder({
       ? options.includeAnonymousType
       : options.typeNameRegex == null ||
         new RegExp(options.typeNameRegex).test(typeName)
-  )
-    for (const property of type.getProperties()) {
-      if (typeof property?.escapedName === "string") {
-        typeDeclarationsOrder.push(property.escapedName);
+  ) {
+    const typeProperties = type.getProperties();
+    if (typeProperties.length > 0) {
+      for (const property of typeProperties) {
+        if (typeof property?.escapedName === "string") {
+          typeDeclarationsOrder.push(property.escapedName);
+        }
+      }
+    } else {
+      for (const subType of type.types) {
+        const properties = subType.getProperties();
+        for (const property of properties) {
+          if (typeof property?.escapedName === "string") {
+            typeDeclarationsOrder.push(property.escapedName);
+          }
+        }
       }
     }
+  }
   return typeDeclarationsOrder;
 }
 
