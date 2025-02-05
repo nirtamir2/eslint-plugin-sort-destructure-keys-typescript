@@ -222,7 +222,11 @@ function getDestructureVariableDeclarations({
             if (leftProperty.type === AST_NODE_TYPES.Identifier) {
               destructuringVariableDeclarations.push(leftProperty);
             }
-            if (leftProperty.type === AST_NODE_TYPES.ObjectPattern && property.key.type === AST_NODE_TYPES.Identifier) destructuringVariableDeclarations.push(property.key);
+            if (
+              leftProperty.type === AST_NODE_TYPES.ObjectPattern &&
+              property.key.type === AST_NODE_TYPES.Identifier
+            )
+              destructuringVariableDeclarations.push(property.key);
             break;
           }
         }
@@ -230,40 +234,6 @@ function getDestructureVariableDeclarations({
     }
   }
   return destructuringVariableDeclarations;
-}
-
-function checkDeclaration({
-  declaration,
-  context,
-  options,
-}: {
-  declaration:
-    | TSESTree.LetOrConstOrVarDeclarator
-    | TSESTree.UsingInForOfDeclarator
-    | TSESTree.UsingInNomalConextDeclarator;
-  context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
-  options: {
-    typeNameRegex?: string;
-    includeAnonymousType?: boolean;
-  };
-}) {
-  const destructuringVariableDeclarations = getDestructureVariableDeclarations({
-    declaration,
-    context,
-    options,
-  });
-  const typeDeclarationOrder = getTypeDeclarationOrder({
-    declaration,
-    context,
-    options,
-  });
-  const result = checkOrder({
-    order: typeDeclarationOrder,
-    values: destructuringVariableDeclarations,
-  });
-  if (result.type === "lintError") {
-    reportError({ context, result });
-  }
 }
 
 export default createEslintRule<Options, MessageIds>({
@@ -307,7 +277,25 @@ export default createEslintRule<Options, MessageIds>({
     return {
       VariableDeclaration(node) {
         for (const declaration of node.declarations) {
-          checkDeclaration({ declaration, context, options });
+          const typeDeclarationOrder = getTypeDeclarationOrder({
+            declaration,
+            context,
+            options,
+          });
+
+          const destructuringVariableDeclarations =
+            getDestructureVariableDeclarations({
+              declaration,
+              context,
+              options,
+            });
+          const result = checkOrder({
+            order: typeDeclarationOrder,
+            values: destructuringVariableDeclarations,
+          });
+          if (result.type === "lintError") {
+            reportError({ context, result });
+          }
         }
       },
     };
