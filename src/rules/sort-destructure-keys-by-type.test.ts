@@ -271,6 +271,34 @@ export function Example(props: Nested) {
       errors: [{ messageId: "sort" }],
     },
     {
+      description: "nested object destructuring with default value for parent",
+      code: `type Nested = {
+  a: string;
+  parent: { firstChild: string; secondChild: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    parent: { secondChild, firstChild } = { secondChild: '', firstChild: '' },
+    a
+  } = props;
+}
+`,
+      output: `type Nested = {
+  a: string;
+  parent: { firstChild: string; secondChild: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    a,
+    parent: { firstChild, secondChild } = { secondChild: '', firstChild: '' },
+  } = props;
+}
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
       description: "deeply nested object destructuring",
       code: `type DeepNestedObject = {
     parent: { child: { firstGrandChild: string; secondGrandChild: string } };
