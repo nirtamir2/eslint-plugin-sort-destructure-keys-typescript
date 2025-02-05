@@ -213,6 +213,31 @@ run({
       errors: [{ messageId: "sort" }],
     },
     {
+      only: true,
+      description: "nested object destructuring with default value for parent",
+      code: `type Nested = {
+  parent: { firstChild: string; secondChild: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    parent: { secondChild, firstChild } = { }
+  } = props;
+}
+`,
+      output: `type Nested = {
+  parent: { firstChild: string; secondChild: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    parent: { firstChild, secondChild } = { }
+  } = props;
+}
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
       description: "nested object destructuring with default value for parent",
       code: `type Nested = {
   a: string;

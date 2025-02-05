@@ -114,46 +114,55 @@ function checkProperty({
   context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
   options: { typeNameRegex?: string; includeAnonymousType?: boolean };
 }) {
-  if (
-    property.value == null ||
-    property.value.type !== AST_NODE_TYPES.ObjectPattern
-  ) {
+  if (property.value == null) {
     return;
   }
   const nestedDestructuringVariableDeclarations: Array<TSESTree.Identifier> =
     [];
 
-  for (const nestedProperty of property.value.properties) {
-    if (nestedProperty.value == null) {
-      continue;
-    }
-    switch (nestedProperty.value.type) {
-      case AST_NODE_TYPES.ObjectPattern: {
-        checkProperty({ property: nestedProperty, context, options });
-        break;
-      }
-      case AST_NODE_TYPES.Identifier: {
-        nestedDestructuringVariableDeclarations.push(nestedProperty.value);
-        break;
-      }
-      case AST_NODE_TYPES.AssignmentPattern: {
-        const leftProperty = nestedProperty.value.left;
-        if (leftProperty.type === AST_NODE_TYPES.Identifier) {
-          nestedDestructuringVariableDeclarations.push(leftProperty);
-        }
-        break;
-      }
+  if (property.value.type === AST_NODE_TYPES.AssignmentPattern) {
+    const leftProperty = property.value.left;
+    // checkProperty({ property: property.value.left, options });
+    if (leftProperty.type === AST_NODE_TYPES.Identifier) {
+      //
+      checkProperty({property: leftProperty, context, options})
     }
   }
-  const services = ESLintUtils.getParserServices(context);
-  const type = services.getTypeAtLocation(property);
-  const order = getTypeDeclerationOrder({ type, options });
-  const result = checkOrder({
-    order,
-    values: nestedDestructuringVariableDeclarations,
-  });
-  if (result.type === "lintError") {
-    reportError({ context, result });
+
+  if (property.value.type === AST_NODE_TYPES.ObjectPattern) {
+    for (const nestedProperty of property.value.properties) {
+      if (nestedProperty.value == null) {
+        continue;
+      }
+      switch (nestedProperty.value.type) {
+        case AST_NODE_TYPES.ObjectPattern: {
+          checkProperty({ property: nestedProperty, context, options });
+          break;
+        }
+        case AST_NODE_TYPES.Identifier: {
+          nestedDestructuringVariableDeclarations.push(nestedProperty.value);
+          break;
+        }
+        case AST_NODE_TYPES.AssignmentPattern: {
+          const leftProperty = nestedProperty.value.left;
+          if (leftProperty.type === AST_NODE_TYPES.Identifier) {
+            nestedDestructuringVariableDeclarations.push(leftProperty);
+          }
+          break;
+        }
+      }
+    }
+
+    const services = ESLintUtils.getParserServices(context);
+    const type = services.getTypeAtLocation(property);
+    const order = getTypeDeclerationOrder({ type, options });
+    const result = checkOrder({
+      order,
+      values: nestedDestructuringVariableDeclarations,
+    });
+    if (result.type === "lintError") {
+      reportError({ context, result });
+    }
   }
 }
 
@@ -222,7 +231,12 @@ function getDestructureVariableDeclarations({
             if (leftProperty.type === AST_NODE_TYPES.Identifier) {
               destructuringVariableDeclarations.push(leftProperty);
             }
-            if (leftProperty.type === AST_NODE_TYPES.ObjectPattern && property.key.type === AST_NODE_TYPES.Identifier) destructuringVariableDeclarations.push(property.key);
+            if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
+              checkProperty({ property, context, options });
+              if (property.key.type === AST_NODE_TYPES.Identifier) {
+                destructuringVariableDeclarations.push(property.key);
+              }
+            }
             break;
           }
         }
