@@ -222,6 +222,7 @@ function getDestructureVariableDeclarations({
             if (leftProperty.type === AST_NODE_TYPES.Identifier) {
               destructuringVariableDeclarations.push(leftProperty);
             }
+            if (leftProperty.type === AST_NODE_TYPES.ObjectPattern && property.key.type === AST_NODE_TYPES.Identifier) destructuringVariableDeclarations.push(property.key);
             break;
           }
         }
