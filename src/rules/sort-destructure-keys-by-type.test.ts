@@ -1,6 +1,7 @@
 import { run } from "./_test";
 import rule, { RULE_NAME } from "./sort-destructure-keys-by-type";
 
+
 const interfaceNameEmailUnsorted = `interface Props {
 name: string;
 email: string;
@@ -271,31 +272,26 @@ export function Example(props: Nested) {
       errors: [{ messageId: "sort" }],
     },
     {
-      description: "nested object destructuring with default value for parent",
-      code: `type Nested = {
-  a: string;
-  parent: { firstChild: string; secondChild: string };
-};
+      description: "nested object destructuring with optional type",
+      code: `type Nested = { firstChild: string; secondChild: string };
 
-export function Example(props: Nested) {
+export function Example(props: {name?: Nested, email:string }) {
   const {
-    parent: { secondChild, firstChild } = { secondChild: '', firstChild: '' },
-    a
+    name: { secondChild, firstChild },
+    email
   } = props;
 }
 `,
-      output: `type Nested = {
-  a: string;
-  parent: { firstChild: string; secondChild: string };
-};
+      output: `type Nested = { firstChild: string; secondChild: string };
 
-export function Example(props: Nested) {
+export function Example(props: {name?: Nested, email:string }) {
   const {
-    a,
-    parent: { firstChild, secondChild } = { secondChild: '', firstChild: '' },
+    name: { firstChild, secondChild },
+    email
   } = props;
 }
 `,
+
       errors: [{ messageId: "sort" }],
     },
     {
