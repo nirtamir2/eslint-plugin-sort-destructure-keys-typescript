@@ -243,30 +243,32 @@ export default createEslintRule<Options, MessageIds>({
                     break;
                   }
                   case AST_NODE_TYPES.AssignmentPattern: {
-                    const leftProperty = property.value.left;
-                    if (leftProperty.type === AST_NODE_TYPES.Identifier) {
-                      destructuringVariableDeclarations.push(leftProperty);
+
+                    if (property.key.type === AST_NODE_TYPES.Identifier) {
+                      destructuringVariableDeclarations.push(property.key);
                     }
+
+                    const leftProperty = property.value.left;
                     if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
-                      const typesOrder = getTypeDeclarationOrder({
+                      const nestedTypesOrder = getTypeDeclarationOrder({
                         node: leftProperty,
                         context,
                         options,
                       });
 
-                      const identifiers: Array<TSESTree.Identifier> = [];
-                      for (const property1 of leftProperty.properties) {
+                      const nestedIdentifiers: Array<TSESTree.Identifier> = [];
+                      for (const nestedProperty of leftProperty.properties) {
                         if (
-                          property1.type === AST_NODE_TYPES.Property &&
-                          property1.key.type === AST_NODE_TYPES.Identifier
+                          nestedProperty.type === AST_NODE_TYPES.Property &&
+                          nestedProperty.key.type === AST_NODE_TYPES.Identifier
                         ) {
-                          identifiers.push(property1.key);
+                          nestedIdentifiers.push(nestedProperty.key);
                         }
                       }
 
                       const result = checkOrder({
-                        order: typesOrder,
-                        values: identifiers,
+                        order: nestedTypesOrder,
+                        values: nestedIdentifiers,
                       });
                       if (result.type === "lintError") {
                         reportError({ context, result });

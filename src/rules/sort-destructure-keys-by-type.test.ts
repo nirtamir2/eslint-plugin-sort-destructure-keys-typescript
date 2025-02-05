@@ -237,8 +237,8 @@ export function Example(props: Nested) {
       errors: [{ messageId: "sort" }],
     },
     {
-        only: true,
-      description: "nested object destructuring with default value for parent complex",
+      description:
+        "nested object destructuring with default value for parent complex",
       code: `type Nested = {
   a: string;
   parent: { firstChild: string; secondChild: string };
@@ -263,7 +263,7 @@ export function Example(props: Nested) {
   } = props;
 }
 `,
-      errors: [{ messageId: "sort" }],
+      errors: [{ messageId: "sort" }, { messageId: "sort" }],
     },
     {
       code: typeIntersectionUnsorted,
