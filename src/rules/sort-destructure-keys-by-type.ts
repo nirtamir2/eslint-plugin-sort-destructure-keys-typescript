@@ -189,53 +189,6 @@ function reportError({
   });
 }
 
-function getDestructureVariableDeclarations({
-  declaration,
-  context,
-  options,
-}: {
-  declaration:
-    | TSESTree.LetOrConstOrVarDeclarator
-    | TSESTree.UsingInForOfDeclarator
-    | TSESTree.UsingInNomalConextDeclarator;
-  context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
-  options: { typeNameRegex?: string; includeAnonymousType?: boolean };
-}) {
-  const destructuringVariableDeclarations: Array<TSESTree.Identifier> = [];
-  if (declaration.id.type === AST_NODE_TYPES.ObjectPattern) {
-    for (const property of declaration.id.properties) {
-      if (property.type === AST_NODE_TYPES.Property) {
-        switch (property.value.type) {
-          case AST_NODE_TYPES.ObjectPattern: {
-            checkProperty({ property, context, options });
-            if (property.key.type === AST_NODE_TYPES.Identifier) {
-              destructuringVariableDeclarations.push(property.key);
-            }
-            break;
-          }
-          case AST_NODE_TYPES.Identifier: {
-            destructuringVariableDeclarations.push(property.value);
-            break;
-          }
-          case AST_NODE_TYPES.AssignmentPattern: {
-            const leftProperty = property.value.left;
-            if (leftProperty.type === AST_NODE_TYPES.Identifier) {
-              destructuringVariableDeclarations.push(leftProperty);
-            }
-            if (
-              leftProperty.type === AST_NODE_TYPES.ObjectPattern &&
-              property.key.type === AST_NODE_TYPES.Identifier
-            )
-              destructuringVariableDeclarations.push(property.key);
-            break;
-          }
-        }
-      }
-    }
-  }
-  return destructuringVariableDeclarations;
-}
-
 export default createEslintRule<Options, MessageIds>({
   name: RULE_NAME,
   meta: {
@@ -277,20 +230,47 @@ export default createEslintRule<Options, MessageIds>({
     return {
       VariableDeclaration(node) {
         for (const declaration of node.declarations) {
-          const typeDeclarationOrder = getTypeDeclarationOrder({
-            declaration,
-            context,
-            options,
-          });
+          const destructuringVariableDeclarations: Array<TSESTree.Identifier> =
+            [];
 
-          const destructuringVariableDeclarations =
-            getDestructureVariableDeclarations({
+          if (declaration.id.type === AST_NODE_TYPES.ObjectPattern) {
+            for (const property of declaration.id.properties) {
+              if (property.type === AST_NODE_TYPES.Property) {
+                switch (property.value.type) {
+                  case AST_NODE_TYPES.ObjectPattern: {
+                    checkProperty({ property, context, options });
+                    if (property.key.type === AST_NODE_TYPES.Identifier) {
+                      destructuringVariableDeclarations.push(property.key);
+                    }
+                    break;
+                  }
+                  case AST_NODE_TYPES.Identifier: {
+                    destructuringVariableDeclarations.push(property.value);
+                    break;
+                  }
+                  case AST_NODE_TYPES.AssignmentPattern: {
+                    const leftProperty = property.value.left;
+                    if (leftProperty.type === AST_NODE_TYPES.Identifier) {
+                      destructuringVariableDeclarations.push(leftProperty);
+                    }
+                    if (
+                      leftProperty.type === AST_NODE_TYPES.ObjectPattern &&
+                      property.key.type === AST_NODE_TYPES.Identifier
+                    )
+                      destructuringVariableDeclarations.push(property.key);
+                    break;
+                  }
+                }
+              }
+            }
+          }
+
+          const result = checkOrder({
+            order: getTypeDeclarationOrder({
               declaration,
               context,
               options,
-            });
-          const result = checkOrder({
-            order: typeDeclarationOrder,
+            }),
             values: destructuringVariableDeclarations,
           });
           if (result.type === "lintError") {
