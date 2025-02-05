@@ -46,37 +46,31 @@ function checkOrder({
 }
 
 function getTypeDeclarationOrder({
-  declaration,
+  node,
   context,
   options,
 }: {
-  declaration:
-    | TSESTree.LetOrConstOrVarDeclarator
-    | TSESTree.UsingInForOfDeclarator
-    | TSESTree.UsingInNomalConextDeclarator;
+  node: TSESTree.Node;
   context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
   options: { typeNameRegex?: string; includeAnonymousType?: boolean };
 }) {
   const typeDeclarationsOrder: Array<string> = [];
-  if (declaration.init?.type === AST_NODE_TYPES.Identifier) {
-    const services = ESLintUtils.getParserServices(context);
-    const type = services.getTypeAtLocation(declaration.init);
-    const typeName = type.symbol?.escapedName;
-    if (
-      typeName == null || type.symbol.escapedName === "__type"
-        ? options.includeAnonymousType
-        : options.typeNameRegex == null ||
-          new RegExp(options.typeNameRegex).test(typeName)
-    )
-      for (const property of type.getProperties()) {
-        if (typeof property?.escapedName === "string") {
-          typeDeclarationsOrder.push(property.escapedName);
-        }
+  const services = ESLintUtils.getParserServices(context);
+  const type = services.getTypeAtLocation(node);
+  const typeName = type.symbol?.escapedName;
+  if (
+    typeName == null || type.symbol.escapedName === "__type"
+      ? options.includeAnonymousType
+      : options.typeNameRegex == null ||
+        new RegExp(options.typeNameRegex).test(typeName)
+  )
+    for (const property of type.getProperties()) {
+      if (typeof property?.escapedName === "string") {
+        typeDeclarationsOrder.push(property.escapedName);
       }
-  }
+    }
   return typeDeclarationsOrder;
 }
-
 function getTypeDeclerationOrder({
   type,
   options,
@@ -253,11 +247,31 @@ export default createEslintRule<Options, MessageIds>({
                     if (leftProperty.type === AST_NODE_TYPES.Identifier) {
                       destructuringVariableDeclarations.push(leftProperty);
                     }
-                    if (
-                      leftProperty.type === AST_NODE_TYPES.ObjectPattern &&
-                      property.key.type === AST_NODE_TYPES.Identifier
-                    )
-                      destructuringVariableDeclarations.push(property.key);
+                    if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
+                      const typesOrder = getTypeDeclarationOrder({
+                        node: leftProperty,
+                        context,
+                        options,
+                      });
+
+                      const identifiers: Array<TSESTree.Identifier> = [];
+                      for (const property1 of leftProperty.properties) {
+                        if (
+                          property1.type === AST_NODE_TYPES.Property &&
+                          property1.key.type === AST_NODE_TYPES.Identifier
+                        ) {
+                          identifiers.push(property1.key);
+                        }
+                      }
+
+                      const result = checkOrder({
+                        order: typesOrder,
+                        values: identifiers,
+                      });
+                      if (result.type === "lintError") {
+                        reportError({ context, result });
+                      }
+                    }
                     break;
                   }
                 }
@@ -265,12 +279,20 @@ export default createEslintRule<Options, MessageIds>({
             }
           }
 
+          if (
+            declaration.init == null ||
+            declaration.init.type !== AST_NODE_TYPES.Identifier
+          ) {
+            return;
+          }
+
+          const typeDeclarationOrder = getTypeDeclarationOrder({
+            node: declaration.init,
+            context,
+            options,
+          });
           const result = checkOrder({
-            order: getTypeDeclarationOrder({
-              declaration,
-              context,
-              options,
-            }),
+            order: typeDeclarationOrder,
             values: destructuringVariableDeclarations,
           });
           if (result.type === "lintError") {
