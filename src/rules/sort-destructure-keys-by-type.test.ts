@@ -213,6 +213,59 @@ run({
       errors: [{ messageId: "sort" }],
     },
     {
+      description: "nested object destructuring with default value for parent",
+      code: `type Nested = {
+  parent: { firstChild: string; secondChild: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    parent: { secondChild, firstChild } = { }
+  } = props;
+}
+`,
+      output: `type Nested = {
+  parent: { firstChild: string; secondChild: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    parent: { firstChild, secondChild } = { }
+  } = props;
+}
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      description:
+        "nested object destructuring with default value for parent complex",
+      code: `type Nested = {
+  a: string;
+  parent: { firstChild: string; secondChild: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    parent: { secondChild, firstChild } = { secondChild: '', firstChild: '' },
+    a
+  } = props;
+}
+`,
+      output: `type Nested = {
+  a: string;
+  parent: { firstChild: string; secondChild: string };
+};
+
+export function Example(props: Nested) {
+  const {
+    a,
+    parent: { firstChild, secondChild } = { secondChild: '', firstChild: '' }
+  } = props;
+}
+`,
+      errors: [{ messageId: "sort" }, { messageId: "sort" }],
+    },
+    {
       code: typeIntersectionUnsorted,
       output: typeIntersectionSorted,
       errors: [{ messageId: "sort" }],
@@ -268,6 +321,29 @@ export function Example(props: Nested) {
   } = props;
 }
 `,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      description: "nested object destructuring with optional type",
+      code: `type Nested = { firstChild: string; secondChild: string };
+
+export function Example(props: {name?: Nested, email:string }) {
+  const {
+    name: { secondChild, firstChild },
+    email
+  } = props;
+}
+`,
+      output: `type Nested = { firstChild: string; secondChild: string };
+
+export function Example(props: {name?: Nested, email:string }) {
+  const {
+    name: { firstChild, secondChild },
+    email
+  } = props;
+}
+`,
+
       errors: [{ messageId: "sort" }],
     },
     {
