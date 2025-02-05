@@ -271,7 +271,6 @@ export function Example(props: Nested) {
       errors: [{ messageId: "sort" }],
     },
     {
-      only: true,
       description: "nested object destructuring with optional type",
       code: `type Nested = { firstChild: string; secondChild: string };
 
