@@ -105,7 +105,7 @@ function getTypeDeclerationOrder({
   return typeDeclarationsOrder;
 }
 
-function checkNestedProperty({
+function checkProperty({
   property,
   context,
   options,
@@ -129,7 +129,7 @@ function checkNestedProperty({
     }
     switch (nestedProperty.value.type) {
       case AST_NODE_TYPES.ObjectPattern: {
-        checkNestedProperty({ property: nestedProperty, context, options });
+        checkProperty({ property: nestedProperty, context, options });
         break;
       }
       case AST_NODE_TYPES.Identifier: {
@@ -207,7 +207,7 @@ function getDestructureVariableDeclarations({
       if (property.type === AST_NODE_TYPES.Property) {
         switch (property.value.type) {
           case AST_NODE_TYPES.ObjectPattern: {
-            checkNestedProperty({ property, context, options });
+            checkProperty({ property, context, options });
             if (property.key.type === AST_NODE_TYPES.Identifier) {
               destructuringVariableDeclarations.push(property.key);
             }
@@ -229,6 +229,40 @@ function getDestructureVariableDeclarations({
     }
   }
   return destructuringVariableDeclarations;
+}
+
+function checkDeclaration({
+  declaration,
+  context,
+  options,
+}: {
+  declaration:
+    | TSESTree.LetOrConstOrVarDeclarator
+    | TSESTree.UsingInForOfDeclarator
+    | TSESTree.UsingInNomalConextDeclarator;
+  context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
+  options: {
+    typeNameRegex?: string;
+    includeAnonymousType?: boolean;
+  };
+}) {
+  const destructuringVariableDeclarations = getDestructureVariableDeclarations({
+    declaration,
+    context,
+    options,
+  });
+  const typeDeclarationOrder = getTypeDeclarationOrder({
+    declaration,
+    context,
+    options,
+  });
+  const result = checkOrder({
+    order: typeDeclarationOrder,
+    values: destructuringVariableDeclarations,
+  });
+  if (result.type === "lintError") {
+    reportError({ context, result });
+  }
 }
 
 export default createEslintRule<Options, MessageIds>({
@@ -272,24 +306,7 @@ export default createEslintRule<Options, MessageIds>({
     return {
       VariableDeclaration(node) {
         for (const declaration of node.declarations) {
-          const destructuringVariableDeclarations =
-            getDestructureVariableDeclarations({
-              declaration,
-              context,
-              options,
-            });
-          const typeDeclarationOrder = getTypeDeclarationOrder({
-            declaration,
-            context,
-            options,
-          });
-          const result = checkOrder({
-            order: typeDeclarationOrder,
-            values: destructuringVariableDeclarations,
-          });
-          if (result.type === "lintError") {
-            reportError({ context, result });
-          }
+          checkDeclaration({ declaration, context, options });
         }
       },
     };
