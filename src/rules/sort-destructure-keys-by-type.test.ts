@@ -213,25 +213,57 @@ run({
       errors: [{ messageId: "sort" }],
     },
     {
-      description: "nested object destructuring with default value for parent",
-      code: `type Nested = {
-  parent: { firstChild: string; secondChild: string };
-};
+      description: "nested object destructuring with default values",
+      code: `
+interface Level3 {
+  a: string;
+  b: string;
+}
 
-export function Example(props: Nested) {
+interface Level2 {
+  level3: Level3;
+  a: string;
+  b: string;
+}
+
+interface Level1 {
+  level2: Level2;
+  a: string;
+  b: string;
+}
+
+export function Example_3(level1: Level1): void {
   const {
-    parent: { secondChild, firstChild } = { }
-  } = props;
+    level2: {
+      level3: { b, a },
+    } = {},
+  } = level1;
 }
 `,
-      output: `type Nested = {
-  parent: { firstChild: string; secondChild: string };
-};
+      output: `
+interface Level3 {
+  a: string;
+  b: string;
+}
 
-export function Example(props: Nested) {
+interface Level2 {
+  level3: Level3;
+  a: string;
+  b: string;
+}
+
+interface Level1 {
+  level2: Level2;
+  a: string;
+  b: string;
+}
+
+export function Example_3(level1: Level1): void {
   const {
-    parent: { firstChild, secondChild } = { }
-  } = props;
+    level2: {
+      level3: { a, b },
+    } = {},
+  } = level1;
 }
 `,
       errors: [{ messageId: "sort" }],
