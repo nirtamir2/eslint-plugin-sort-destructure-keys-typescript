@@ -45,7 +45,7 @@ function checkOrder({
   return { type: "success" };
 }
 
-function _____________getTypeDeclarationOrder({
+function calculateTypeDeclarationOrder({
   node,
   context,
   options,
@@ -56,11 +56,10 @@ function _____________getTypeDeclarationOrder({
 }) {
   const services = ESLintUtils.getParserServices(context);
   const type = services.getTypeAtLocation(node);
-
-  return __GOOD__getTypeDeclerationOrder({ type, options });
+  return getTypeDeclarationOrder({ type, options });
 }
 
-function __GOOD__getTypeDeclerationOrder({
+function getTypeDeclarationOrder({
   type,
   options,
 }: {
@@ -128,9 +127,12 @@ function checkProperty({
       }
     }
   }
-  const services = ESLintUtils.getParserServices(context);
-  const type = services.getTypeAtLocation(property);
-  const order = __GOOD__getTypeDeclerationOrder({ type, options });
+  const order = calculateTypeDeclarationOrder({
+    node: property,
+    context,
+    options,
+  });
+
   const result = checkOrder({
     order,
     values: nestedDestructuringVariableDeclarations,
@@ -173,22 +175,22 @@ function reportError({
 }
 
 function handleObjectPattern({
-  leftProperty,
+  objectPatternNode,
   context,
   options,
 }: {
-  leftProperty: TSESTree.ObjectPattern;
+  objectPatternNode: TSESTree.ObjectPattern;
   context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
   options: { typeNameRegex?: string; includeAnonymousType?: boolean };
 }) {
-  const nestedTypesOrder = _____________getTypeDeclarationOrder({
-    node: leftProperty,
+  const nestedTypesOrder = calculateTypeDeclarationOrder({
+    node: objectPatternNode,
     context,
     options,
   });
 
   const nestedIdentifiers: Array<TSESTree.Identifier> = [];
-  for (const nestedProperty of leftProperty.properties) {
+  for (const nestedProperty of objectPatternNode.properties) {
     if (
       nestedProperty.type === AST_NODE_TYPES.Property &&
       nestedProperty.key.type === AST_NODE_TYPES.Identifier
@@ -200,7 +202,7 @@ function handleObjectPattern({
       nestedProperty.value.type === AST_NODE_TYPES.ObjectPattern
     ) {
       handleObjectPattern({
-        leftProperty: nestedProperty.value,
+        objectPatternNode: nestedProperty.value,
         context,
         options,
       });
@@ -283,7 +285,7 @@ export default createEslintRule<Options, MessageIds>({
                     const leftProperty = property.value.left;
                     if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
                       handleObjectPattern({
-                        leftProperty,
+                        objectPatternNode: leftProperty,
                         context,
                         options,
                       });
@@ -302,7 +304,7 @@ export default createEslintRule<Options, MessageIds>({
             return;
           }
 
-          const typeDeclarationOrder = _____________getTypeDeclarationOrder({
+          const typeDeclarationOrder = calculateTypeDeclarationOrder({
             node: declaration.init,
             context,
             options,
