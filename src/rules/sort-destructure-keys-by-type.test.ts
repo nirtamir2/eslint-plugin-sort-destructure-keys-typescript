@@ -213,23 +213,10 @@ run({
       errors: [{ messageId: "sort" }],
     },
     {
-        only: true,
+      only: true,
       description: "nested object destructuring with default values",
       code: `
-      
-      interface Level5 {
-  a: string;
-  b: string;
-}
-
-interface Level4 {
-  level5: Level5;
-  a: string;
-  b: string;
-}
-
 interface Level3 {
-  level4: Level4;
   a: string;
   b: string;
 }
@@ -246,8 +233,7 @@ interface Level1 {
   b: string;
 }
 
-      
-      export function Example_3(level1: Level1): void {
+export function Example_3(level1: Level1): void {
   const {
     level2: {
       level3: { b, a },
@@ -256,20 +242,7 @@ interface Level1 {
 }
 `,
       output: `
-      
-      interface Level5 {
-  a: string;
-  b: string;
-}
-
-interface Level4 {
-  level5: Level5;
-  a: string;
-  b: string;
-}
-
 interface Level3 {
-  level4: Level4;
   a: string;
   b: string;
 }
@@ -286,8 +259,7 @@ interface Level1 {
   b: string;
 }
 
-      
-      export function Example_3(level1: Level1): void {
+export function Example_3(level1: Level1): void {
   const {
     level2: {
       level3: { a, b },
