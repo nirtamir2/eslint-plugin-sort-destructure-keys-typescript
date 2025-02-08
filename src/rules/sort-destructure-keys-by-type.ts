@@ -45,7 +45,7 @@ function checkOrder({
   return { type: "success" };
 }
 
-function getTypeDeclarationOrder({
+function _____________getTypeDeclarationOrder({
   node,
   context,
   options,
@@ -54,24 +54,13 @@ function getTypeDeclarationOrder({
   context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
   options: { typeNameRegex?: string; includeAnonymousType?: boolean };
 }) {
-  const typeDeclarationsOrder: Array<string> = [];
   const services = ESLintUtils.getParserServices(context);
   const type = services.getTypeAtLocation(node);
-  const typeName = type.symbol?.escapedName;
-  if (
-    typeName == null || type.symbol.escapedName === "__type"
-      ? options.includeAnonymousType
-      : options.typeNameRegex == null ||
-        new RegExp(options.typeNameRegex).test(typeName)
-  )
-    for (const property of type.getProperties()) {
-      if (typeof property?.escapedName === "string") {
-        typeDeclarationsOrder.push(property.escapedName);
-      }
-    }
-  return typeDeclarationsOrder;
+
+  return __GOOD__getTypeDeclerationOrder({ type, options });
 }
-function getTypeDeclerationOrder({
+
+function __GOOD__getTypeDeclerationOrder({
   type,
   options,
 }: {
@@ -141,7 +130,7 @@ function checkProperty({
   }
   const services = ESLintUtils.getParserServices(context);
   const type = services.getTypeAtLocation(property);
-  const order = getTypeDeclerationOrder({ type, options });
+  const order = __GOOD__getTypeDeclerationOrder({ type, options });
   const result = checkOrder({
     order,
     values: nestedDestructuringVariableDeclarations,
@@ -181,6 +170,50 @@ function reportError({
       ];
     },
   });
+}
+
+function handleObjectPattern({
+  leftProperty,
+  context,
+  options,
+}: {
+  leftProperty: TSESTree.ObjectPattern;
+  context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
+  options: { typeNameRegex?: string; includeAnonymousType?: boolean };
+}) {
+  const nestedTypesOrder = _____________getTypeDeclarationOrder({
+    node: leftProperty,
+    context,
+    options,
+  });
+
+  const nestedIdentifiers: Array<TSESTree.Identifier> = [];
+  for (const nestedProperty of leftProperty.properties) {
+    if (
+      nestedProperty.type === AST_NODE_TYPES.Property &&
+      nestedProperty.key.type === AST_NODE_TYPES.Identifier
+    ) {
+      nestedIdentifiers.push(nestedProperty.key);
+    }
+    if (
+      nestedProperty.value != null &&
+      nestedProperty.value.type === AST_NODE_TYPES.ObjectPattern
+    ) {
+      handleObjectPattern({
+        leftProperty: nestedProperty.value,
+        context,
+        options,
+      });
+    }
+  }
+
+  const result = checkOrder({
+    order: nestedTypesOrder,
+    values: nestedIdentifiers,
+  });
+  if (result.type === "lintError") {
+    reportError({ context, result });
+  }
 }
 
 export default createEslintRule<Options, MessageIds>({
@@ -243,36 +276,17 @@ export default createEslintRule<Options, MessageIds>({
                     break;
                   }
                   case AST_NODE_TYPES.AssignmentPattern: {
-
                     if (property.key.type === AST_NODE_TYPES.Identifier) {
                       destructuringVariableDeclarations.push(property.key);
                     }
 
                     const leftProperty = property.value.left;
                     if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
-                      const nestedTypesOrder = getTypeDeclarationOrder({
-                        node: leftProperty,
+                      handleObjectPattern({
+                        leftProperty,
                         context,
                         options,
                       });
-
-                      const nestedIdentifiers: Array<TSESTree.Identifier> = [];
-                      for (const nestedProperty of leftProperty.properties) {
-                        if (
-                          nestedProperty.type === AST_NODE_TYPES.Property &&
-                          nestedProperty.key.type === AST_NODE_TYPES.Identifier
-                        ) {
-                          nestedIdentifiers.push(nestedProperty.key);
-                        }
-                      }
-
-                      const result = checkOrder({
-                        order: nestedTypesOrder,
-                        values: nestedIdentifiers,
-                      });
-                      if (result.type === "lintError") {
-                        reportError({ context, result });
-                      }
                     }
                     break;
                   }
@@ -288,7 +302,7 @@ export default createEslintRule<Options, MessageIds>({
             return;
           }
 
-          const typeDeclarationOrder = getTypeDeclarationOrder({
+          const typeDeclarationOrder = _____________getTypeDeclarationOrder({
             node: declaration.init,
             context,
             options,
