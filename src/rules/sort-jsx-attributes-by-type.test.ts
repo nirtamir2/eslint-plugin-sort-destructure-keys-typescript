@@ -96,6 +96,24 @@ interface Props { a: string, b: string }
       errors: [{ messageId: "sort" }],
     },
     {
+      name: "with JSXMemberExpression JSX",
+      code: `interface Props { a: string, b: string }
+function A(props: Props) {
+}
+
+const B = { A };
+
+<B.A b="2" a="1" />`,
+      output: `interface Props { a: string, b: string }
+function A(props: Props) {
+}
+
+const B = { A };
+
+<B.A a="1" b="2" />`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
       name: "with react basic",
       code: `
 /// <reference types="react" />

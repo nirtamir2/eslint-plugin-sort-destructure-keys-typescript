@@ -99,13 +99,13 @@ function reportError({
 
 function getJSXIdentifier(
   node: TSESTree.JSXOpeningElement,
-): TSESTree.JSXIdentifier {
+): TSESTree.JSXIdentifier | TSESTree.JSXMemberExpression {
   switch (node.name.type) {
     case AST_NODE_TYPES.JSXIdentifier: {
       return node.name;
     }
     case AST_NODE_TYPES.JSXMemberExpression: {
-      return node.name.property;
+      return node.name;
     }
     case AST_NODE_TYPES.JSXNamespacedName: {
       return node.name.namespace;
