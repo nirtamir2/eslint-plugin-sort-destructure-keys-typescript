@@ -117,6 +117,9 @@ function getNodeForContextualType(
   }
 }
 
+const MATCH_ALL_REGEX = "^.*$";
+const MATCH_START_WITH_UPPERCASE_LETTER_REGEX = "^[A-Z].*$";
+
 export default createEslintRule<Options, MessageIds>({
   name: RULE_NAME,
   meta: {
@@ -129,34 +132,49 @@ export default createEslintRule<Options, MessageIds>({
       {
         type: "object",
         properties: {
-          // TODO: options
-          ignorePropertiesThatNotIncludesInType: {
-            type: "boolean",
+          componentNameRegex: {
+            type: "string",
           },
-          ignoreJSXTags: {
+          includeJSXLowercaseTags: {
+            description:
+              "Include JSX tags that start with a lowercase letter like native HTML elements. If set to true it may conflict with other ESLint plugins. Does not applicable if `componentNameRegex` is set.",
+            default: false,
             type: "boolean",
-          },
-          ignoredSourceRegexes: {
-            description: "List of regexes to ignore components",
-            anyOf: [
-              {
-                type: ["array"],
-                items: {
-                  type: ["string"],
-                },
-              },
-            ],
           },
         },
         additionalProperties: false,
       },
     ],
     messages: {
-      sort: `Expected JSX attributes to be in sorted order by type order. Expected {{first}} to be before {{second}}.`,
+      sort: `Expected JSX attributes to be sorted order by type order. Expected \`{{first}}\` to be before \`{{second}}\`.`,
     },
   },
   defaultOptions: [],
   create: (context) => {
+    const options: {
+      componentNameRegex?: string;
+      includeJSXLowercaseTags?: boolean;
+    } = Object.assign(
+      { includeJSXLowercaseTags: true },
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      context.options[0],
+    );
+
+    if (
+      options.includeJSXLowercaseTags === true &&
+      options.componentNameRegex != null
+    ) {
+      throw new Error(
+        "`includeJSXLowercaseTags: true` cannot be used with `componentNameRegex`. It use to override the default behavior of `componentNameRegex`",
+      );
+    }
+    const componentsRegex = new RegExp(
+      (options.componentNameRegex ?? options.includeJSXLowercaseTags)
+        ? MATCH_ALL_REGEX
+        : MATCH_START_WITH_UPPERCASE_LETTER_REGEX,
+    );
+
     const services = ESLintUtils.getParserServices(context);
     const typeChecker = services.program.getTypeChecker();
 
@@ -165,6 +183,11 @@ export default createEslintRule<Options, MessageIds>({
         const contextualTypeNode = getNodeForContextualType(node);
 
         const tsNode = services.esTreeNodeToTSNodeMap.get(contextualTypeNode);
+
+        const componentName = tsNode.getText();
+        if (!componentsRegex.test(componentName)) {
+          return;
+        }
 
         const propsType = typeChecker.getContextualType(tsNode);
         if (propsType == null) {

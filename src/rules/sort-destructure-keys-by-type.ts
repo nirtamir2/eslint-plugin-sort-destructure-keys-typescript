@@ -241,7 +241,7 @@ export default createEslintRule<Options, MessageIds>({
       },
     ],
     messages: {
-      sort: `Expected object keys to be in sorted order by type order. Expected {{first}} to be before {{second}}.`,
+      sort: `Expected object keys to be sorted order by type order. Expected \`{{first}}\` to be before \`{{second}}\`.`,
     },
   },
   defaultOptions: [],
