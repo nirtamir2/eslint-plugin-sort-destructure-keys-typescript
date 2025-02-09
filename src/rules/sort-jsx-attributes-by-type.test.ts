@@ -18,14 +18,56 @@ run({
     },
   },
   valid: [
-    `
+    tsx`
         function A(props: { a: string, b: string }) {
 }
 
 <A a="1" b="2" />
 `,
+    {
+      name: "includeJSXLowercaseTags option true with react ordered correctly",
+      code: tsx`
+
+/// <reference types="react" />
+/// <reference types="react-dom" />
+
+<div key="key" className="border" />
+    `,
+      options: { includeJSXLowercaseTags: true },
+    },
+    {
+      name: "includeJSXLowercaseTags option false with react unchecked",
+      code: tsx`
+
+/// <reference types="react" />
+/// <reference types="react-dom" />
+
+<div className="border" key="key" />;
+<div key="key" className="border" />;
+    `,
+      options: { includeJSXLowercaseTags: false },
+    },
   ],
   invalid: [
+    {
+      name: "includeJSXLowercaseTags true option with react with unordered",
+      options: { includeJSXLowercaseTags: true },
+      code: tsx`
+
+/// <reference types="react" />
+/// <reference types="react-dom" />
+
+<div className="border" key="key" />
+    `,
+      output: tsx`
+
+/// <reference types="react" />
+/// <reference types="react-dom" />
+
+<div key="key" className="border" />
+    `,
+      errors: [{ messageId: "sort" }],
+    },
     {
       name: "inline type",
       code: tsx`
