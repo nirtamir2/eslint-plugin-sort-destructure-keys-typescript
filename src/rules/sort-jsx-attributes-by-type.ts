@@ -9,7 +9,6 @@ export type Options = [];
 
 type OrderResult =
   | { type: "success" }
-  | { type: "error"; value: TSESTree.JSXAttribute; message: string }
   | {
       type: "lintError";
       value: TSESTree.JSXAttribute;
