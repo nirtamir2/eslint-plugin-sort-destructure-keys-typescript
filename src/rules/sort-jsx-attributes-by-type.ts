@@ -15,23 +15,49 @@ type OrderResult =
       shouldBeBefore: TSESTree.Identifier;
     };
 
-function getComponentName(component: TSESTree.JSXTagNameExpression): string {
-  switch (component.type) {
-    case AST_NODE_TYPES.JSXIdentifier: {
-      return component.name;
+function checkOrder({
+  order,
+  values,
+}: {
+  order: Array<string>;
+  values: Array<TSESTree.JSXAttribute | TSESTree.JSXSpreadAttribute>;
+}): OrderResult {
+  let lastIndex = -1;
+  let lastValue: TSESTree.Identifier | null = null;
+
+  for (const value of values) {
+    if (value.type !== AST_NODE_TYPES.JSXAttribute) {
+      continue;
     }
-    case "JSXMemberExpression": {
-      return `${getComponentName(
-        component.object,
-      )}.${getComponentName(component.property)}`;
+    const vName = value.name;
+    if (vName.type === AST_NODE_TYPES.JSXNamespacedName) {
+      vName.name.name;
     }
-    case AST_NODE_TYPES.JSXNamespacedName: {
-      return getComponentName(component);
+    if (vName.type === AST_NODE_TYPES.JSXIdentifier) {
+      vName.name;
     }
-    default: {
-      throw new Error(`Unknown name type: ${component.type}`);
+    let searchElement =
+      vName.type === AST_NODE_TYPES.JSXNamespacedName
+        ? value.name.name
+        : vName.type === AST_NODE_TYPES.JSXIdentifier
+          ? vName.name
+          : "";
+
+    const index = order.indexOf(searchElement);
+
+    if (index === -1) {
+      return { type: "error", value, message: "Not in order array" };
     }
+
+    if (index < lastIndex && lastValue != null) {
+      return { type: "lintError", value: lastValue, shouldBeBefore: value };
+    }
+
+    lastIndex = index;
+    lastValue = value;
   }
+
+  return { type: "success" };
 }
 
 export default createEslintRule<Options, MessageIds>({
@@ -72,24 +98,33 @@ export default createEslintRule<Options, MessageIds>({
       context.options[0],
     );
 
+    const services = ESLintUtils.getParserServices(context);
+    const typeChecker = services.program.getTypeChecker();
+
     return {
-      JSXElement(node) {
-        const {attributes} = node.openingElement;
-        const componentName = getComponentName(node.openingElement.name);
+      JSXIdentifier(node) {
+        const tsNode = services.esTreeNodeToTSNodeMap.get(node);
 
-        // Now need to find the type of the component and then to find the props and get the order...
-        // This is when I stuck...
+        const propsType = typeChecker.getContextualType(tsNode);
+        if (propsType == null) {
+          return;
+        }
 
-        const typeDeclarationsOrder: Array<string> = [];
-        const services = ESLintUtils.getParserServices(context);
-        const type = services.getTypeAtLocation(node.openingElement);
+        const propsTypePropertiesOrder =
+          typeChecker.getPropertiesOfType(propsType).map(a => a.getName());
 
-        // Get the type of the function parameter (props)
-        const typeChecker = services.program.getTypeChecker();
-        const propsType = typeChecker.getTypeAtLocation(node.openingElement);
+        const { parent } = node.parent;
+        if (parent?.type !== AST_NODE_TYPES.JSXOpeningElement) {
+          return;
+        }
+        const { attributes } = parent;
 
-        // Get all properties of the `props` type
-        const properties = typeChecker.getPropertiesOfType(propsType);
+        const result = checkOrder({
+          order: propsTypePropertiesOrder,
+          values: attributes,
+        });
+
+        console.log("result", result);
       },
     };
   },

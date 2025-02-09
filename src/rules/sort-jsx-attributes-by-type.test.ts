@@ -8,6 +8,7 @@ run({
   languageOptions: {
     parser: typescriptEslintParser,
     parserOptions: {
+      projectService: true,
       project: "./tsconfig.json",
       tsconfigRootDir: `${import.meta.dirname}/fixtures-jsx`,
       ecmaFeatures: {
@@ -19,7 +20,11 @@ run({
   invalid: [
     {
       code: `
-        const a = <div a={1} b={2} c {...f}/>`,
+        function A(props: { a: string, b: string }) {
+}
+
+<A b="" a="" />
+`,
       errors: [{ messageId: "sort" }],
     },
   ],
