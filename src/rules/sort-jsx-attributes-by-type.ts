@@ -101,18 +101,18 @@ function getNodeForContextualType(
   node: TSESTree.JSXOpeningElement,
 ): TSESTree.JSXIdentifier | TSESTree.JSXMemberExpression {
   switch (node.name.type) {
-    // <A a="" />
+    // `<A a="" />`
     case AST_NODE_TYPES.JSXIdentifier: {
       return node.name;
     }
-    // <B.A a="" />
+    // `<B.A a="" />`
     case AST_NODE_TYPES.JSXMemberExpression: {
       return node.name;
     }
-    // <B:A a="" /> but it's not supported in react
+    // `<B:A a="" />` but this syntax is not supported in React.
+    // NOTICE: It works, but I have a problem with the types, so I cast to never
     case AST_NODE_TYPES.JSXNamespacedName: {
-      // IDK
-      return node.name.namespace;
+      return node.name as never;
     }
   }
 }

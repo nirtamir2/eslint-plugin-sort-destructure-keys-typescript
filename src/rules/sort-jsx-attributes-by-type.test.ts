@@ -114,7 +114,6 @@ const B = { A };
       errors: [{ messageId: "sort" }],
     },
     {
-        only: true,
       name: "with JSXNamespacedName",
       code: `declare namespace JSX {
   interface IntrinsicElements {
