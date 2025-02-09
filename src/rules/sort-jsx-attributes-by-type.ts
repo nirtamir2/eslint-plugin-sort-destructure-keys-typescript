@@ -1,5 +1,9 @@
 import type { TSESTree } from "@typescript-eslint/types";
+import { TSNode } from "@typescript-eslint/typescript-estree";
+import type { ParserServicesWithTypeInformation } from "@typescript-eslint/utils";
 import { AST_NODE_TYPES, ESLintUtils } from "@typescript-eslint/utils";
+import type * as ts from "typescript";
+import { Node } from "typescript";
 import { createEslintRule } from "../utils";
 
 export const RULE_NAME = "sort-jsx-attributes-by-type";
@@ -36,7 +40,7 @@ function checkOrder({
     if (vName.type === AST_NODE_TYPES.JSXIdentifier) {
       vName.name;
     }
-    let searchElement =
+    const searchElement =
       vName.type === AST_NODE_TYPES.JSXNamespacedName
         ? value.name.name
         : vName.type === AST_NODE_TYPES.JSXIdentifier
@@ -58,6 +62,40 @@ function checkOrder({
   }
 
   return { type: "success" };
+}
+
+function lintRule({
+  node,
+  services,
+  typeChecker,
+}: {
+  node: TSESTree.JSXIdentifier;
+  services: ParserServicesWithTypeInformation;
+  typeChecker: ts.TypeChecker;
+}) {
+  const tsNode = services.esTreeNodeToTSNodeMap.get(node);
+
+  const propsType = typeChecker.getContextualType(tsNode);
+  if (propsType == null) {
+    return;
+  }
+
+  const propsTypePropertiesOrder = typeChecker
+    .getPropertiesOfType(propsType)
+    .map((a) => a.getName());
+
+  const { parent } = node.parent;
+  if (parent?.type !== AST_NODE_TYPES.JSXOpeningElement) {
+    return;
+  }
+  const { attributes } = parent;
+
+  const result = checkOrder({
+    order: propsTypePropertiesOrder,
+    values: attributes,
+  });
+
+  console.log("result", result);
 }
 
 export default createEslintRule<Options, MessageIds>({
@@ -102,30 +140,12 @@ export default createEslintRule<Options, MessageIds>({
     const typeChecker = services.program.getTypeChecker();
 
     return {
-      JSXIdentifier(node) {
-        const tsNode = services.esTreeNodeToTSNodeMap.get(node);
-
-        const propsType = typeChecker.getContextualType(tsNode);
-        if (propsType == null) {
-          return;
-        }
-
-        const propsTypePropertiesOrder =
-          typeChecker.getPropertiesOfType(propsType).map(a => a.getName());
-
-        const { parent } = node.parent;
-        if (parent?.type !== AST_NODE_TYPES.JSXOpeningElement) {
-          return;
-        }
-        const { attributes } = parent;
-
-        const result = checkOrder({
-          order: propsTypePropertiesOrder,
-          values: attributes,
-        });
-
-        console.log("result", result);
-      },
+      JSXIdentifier: (node) =>
+        lintRule({
+          node,
+          services,
+          typeChecker,
+        }),
     };
   },
 });
