@@ -16,7 +16,14 @@ run({
       },
     },
   },
-  valid: [],
+  valid: [
+    `
+        function A(props: { a: string, b: string }) {
+}
+
+<A a="1" b="2" />
+`,
+  ],
   invalid: [
     {
       code: `
