@@ -26,6 +26,7 @@ run({
   ],
   invalid: [
     {
+      name: "inline type",
       code: `
         function A(props: { a: string, b: string }) {
 }
@@ -34,6 +35,24 @@ run({
 `,
       output: `
         function A(props: { a: string, b: string }) {
+}
+
+<A a="1" b="2" />
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      name: "with type variable",
+      code: `
+type Props = { a: string, b: string };
+        function A(props: Props) {
+}
+
+<A b="2" a="1" />
+`,
+      output: `
+type Props = { a: string, b: string };
+        function A(props: Props) {
 }
 
 <A a="1" b="2" />
