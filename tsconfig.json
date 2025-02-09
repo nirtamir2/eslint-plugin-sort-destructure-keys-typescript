@@ -6,7 +6,6 @@
     "module": "esnext",
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
-    "types": ["vitest/globals"],
     "allowJs": true,
     "checkJs": true,
     "strict": true,
