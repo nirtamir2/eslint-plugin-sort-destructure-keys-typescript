@@ -76,7 +76,8 @@ interface Props { a: string, b: string }
 <A a="1" b="2" />
 `,
       errors: [{ messageId: "sort" }],
-    },    {
+    },
+    {
       name: "with spread",
       code: `
 interface Props { a: string, b: string, c: string }
@@ -91,6 +92,24 @@ interface Props { a: string, b: string, c: string }
 }
 
 <A a="1" b="2" {...{c: ""}}  />
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      name: "with spread in the middle",
+      code: `
+interface Props { a: string, b: string, c: string }
+        function A(props: Props) {
+}
+
+<A b="2" {...{c: ""}} a="1" />
+`,
+      output: `
+interface Props { a: string, b: string, c: string }
+        function A(props: Props) {
+}
+
+<A a="1" {...{c: ""}} b="2" />
 `,
       errors: [{ messageId: "sort" }],
     },
