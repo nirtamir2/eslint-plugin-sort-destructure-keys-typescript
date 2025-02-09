@@ -23,7 +23,13 @@ run({
         function A(props: { a: string, b: string }) {
 }
 
-<A b="" a="" />
+<A b="2" a="1" />
+`,
+      output: `
+        function A(props: { a: string, b: string }) {
+}
+
+<A a="1" b="2" />
 `,
       errors: [{ messageId: "sort" }],
     },
