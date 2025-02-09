@@ -2,6 +2,7 @@ export default {
   plugins: [
     "prettier-plugin-packagejson",
     "@trivago/prettier-plugin-sort-imports",
+    "prettier-plugin-embed",
   ],
   // @see https://github.com/tailwindlabs/prettier-plugin-tailwindcss#resolving-your-tailwind-configuration
   tailwindConfig: "./tailwind.config.ts",
