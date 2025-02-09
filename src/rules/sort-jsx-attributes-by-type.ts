@@ -79,8 +79,8 @@ function reportError({
     node: result.value,
     messageId: "sort",
     data: {
-      first: result.shouldBeBefore.name,
-      second: result.value.name,
+      first: getJSXIdentifierOrNamespaceName(result.shouldBeBefore.name),
+      second: getJSXIdentifierOrNamespaceName(result.value.name),
     },
     fix: (fixer) => {
       return [
