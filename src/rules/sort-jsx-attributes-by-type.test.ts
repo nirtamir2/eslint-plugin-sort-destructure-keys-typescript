@@ -78,6 +78,71 @@ interface Props { a: string, b: string }
       errors: [{ messageId: "sort" }],
     },
     {
+      name: "with unknown props",
+      only: true,
+      code: `
+interface Props { a: string, b: string }
+        function A(props: Props) {
+}
+
+<A b="2" unknown="s" a="1" />
+`,
+      output: `
+interface Props { a: string, b: string }
+        function A(props: Props) {
+}
+
+<A a="1" unknown="s" b="2" />
+`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      name: "with react basic",
+      code: `
+/// <reference types="react" />
+/// <reference types="react-dom" />
+
+import * as React from "react";
+
+<button className="a" type="button" />`,
+      output: `
+/// <reference types="react" />
+/// <reference types="react-dom" />
+
+import * as React from "react";
+
+<button type="button" className="a" />`,
+
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      name: "with react",
+      code: `
+        /// <reference types="react" />
+        /// <reference types="react-dom" />
+
+        import * as React from "react";
+
+interface Props { a: string, b: string }
+        function A(props: Props) {
+}
+
+<A b="2" a="1" />`,
+      output: `
+        /// <reference types="react" />
+        /// <reference types="react-dom" />
+
+        import * as React from "react";
+
+interface Props { a: string, b: string }
+        function A(props: Props) {
+}
+
+<A a="1" b="2" />`,
+
+      errors: [{ messageId: "sort" }],
+    },
+    {
       name: "with spread",
       code: `
 interface Props { a: string, b: string, c: string }

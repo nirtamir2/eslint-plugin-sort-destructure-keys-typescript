@@ -105,7 +105,32 @@ export default createEslintRule<Options, MessageIds>({
       description: "Sort JSX attributes keys based on type order",
     },
     fixable: "code",
-    schema: [],
+    schema: [
+      {
+        type: "object",
+        properties: {
+          // TODO: options
+          ignorePropertiesThatNotIncludesInType: {
+            type: "boolean",
+          },
+          ignoreJSXTags: {
+            type: "boolean",
+          },
+          ignoredSourceRegexes: {
+            description: "List of regexes to ignore components",
+            anyOf: [
+              {
+                type: ["array"],
+                items: {
+                  type: ["string"],
+                },
+              },
+            ],
+          },
+        },
+        additionalProperties: false,
+      },
+    ],
     messages: {
       sort: `Expected JSX attributes to be in sorted order by type order. Expected {{first}} to be before {{second}}.`,
     },
