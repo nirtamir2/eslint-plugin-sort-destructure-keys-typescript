@@ -213,7 +213,7 @@ run({
       errors: [{ messageId: "sort" }],
     },
     {
-      description: "nested object destructuring with default values",
+      description: "nested object destructuring with default attributes",
       code: `
 interface Level3 {
   a: string;

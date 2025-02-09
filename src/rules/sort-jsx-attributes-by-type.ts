@@ -1,9 +1,6 @@
 import type { TSESTree } from "@typescript-eslint/types";
-import { TSNode } from "@typescript-eslint/typescript-estree";
-import type { ParserServicesWithTypeInformation } from "@typescript-eslint/utils";
 import { AST_NODE_TYPES, ESLintUtils } from "@typescript-eslint/utils";
-import type * as ts from "typescript";
-import { Node } from "typescript";
+import type * as TSESLint from "@typescript-eslint/utils/ts-eslint";
 import { createEslintRule } from "../utils";
 
 export const RULE_NAME = "sort-jsx-attributes-by-type";
@@ -12,42 +9,46 @@ export type Options = [];
 
 type OrderResult =
   | { type: "success" }
-  | { type: "error"; value: TSESTree.Identifier; message: string }
+  | { type: "error"; value: TSESTree.JSXAttribute; message: string }
   | {
       type: "lintError";
-      value: TSESTree.Identifier;
-      shouldBeBefore: TSESTree.Identifier;
+      value: TSESTree.JSXAttribute;
+      shouldBeBefore: TSESTree.JSXAttribute;
     };
+
+function getJSXIdentifierOrNamespaceName(
+  value: TSESTree.JSXIdentifier | TSESTree.JSXNamespacedName,
+): string | null {
+  if (value.type === AST_NODE_TYPES.JSXNamespacedName) {
+    return value.name.name;
+  }
+  if (value.type === AST_NODE_TYPES.JSXIdentifier) {
+    return value.name;
+  }
+  return null;
+}
 
 function checkOrder({
   order,
-  values,
+  attributes,
 }: {
   order: Array<string>;
-  values: Array<TSESTree.JSXAttribute | TSESTree.JSXSpreadAttribute>;
+  attributes: Array<TSESTree.JSXAttribute | TSESTree.JSXSpreadAttribute>;
 }): OrderResult {
   let lastIndex = -1;
-  let lastValue: TSESTree.Identifier | null = null;
+  let lastValue: TSESTree.JSXAttribute | null = null;
 
-  for (const value of values) {
+  for (const value of attributes) {
     if (value.type !== AST_NODE_TYPES.JSXAttribute) {
       continue;
     }
-    const vName = value.name;
-    if (vName.type === AST_NODE_TYPES.JSXNamespacedName) {
-      vName.name.name;
+    const jsxIdentifierOrNamespaceName = getJSXIdentifierOrNamespaceName(
+      value.name,
+    );
+    if (jsxIdentifierOrNamespaceName == null) {
+      continue;
     }
-    if (vName.type === AST_NODE_TYPES.JSXIdentifier) {
-      vName.name;
-    }
-    const searchElement =
-      vName.type === AST_NODE_TYPES.JSXNamespacedName
-        ? value.name.name
-        : vName.type === AST_NODE_TYPES.JSXIdentifier
-          ? vName.name
-          : "";
-
-    const index = order.indexOf(searchElement);
+    const index = order.indexOf(jsxIdentifierOrNamespaceName);
 
     if (index === -1) {
       return { type: "error", value, message: "Not in order array" };
@@ -64,38 +65,36 @@ function checkOrder({
   return { type: "success" };
 }
 
-function lintRule({
-  node,
-  services,
-  typeChecker,
+function reportError({
+  context,
+  result,
 }: {
-  node: TSESTree.JSXIdentifier;
-  services: ParserServicesWithTypeInformation;
-  typeChecker: ts.TypeChecker;
+  context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
+  result: {
+    value: TSESTree.JSXAttribute;
+    shouldBeBefore: TSESTree.JSXAttribute;
+  };
 }) {
-  const tsNode = services.esTreeNodeToTSNodeMap.get(node);
-
-  const propsType = typeChecker.getContextualType(tsNode);
-  if (propsType == null) {
-    return;
-  }
-
-  const propsTypePropertiesOrder = typeChecker
-    .getPropertiesOfType(propsType)
-    .map((a) => a.getName());
-
-  const { parent } = node.parent;
-  if (parent?.type !== AST_NODE_TYPES.JSXOpeningElement) {
-    return;
-  }
-  const { attributes } = parent;
-
-  const result = checkOrder({
-    order: propsTypePropertiesOrder,
-    values: attributes,
+  context.report({
+    node: result.value,
+    messageId: "sort",
+    data: {
+      first: result.shouldBeBefore.name,
+      second: result.value.name,
+    },
+    fix: (fixer) => {
+      return [
+        fixer.replaceTextRange(
+          result.value.range,
+          context.sourceCode.getText(result.shouldBeBefore),
+        ),
+        fixer.replaceTextRange(
+          result.shouldBeBefore.range,
+          context.sourceCode.getText(result.value),
+        ),
+      ];
+    },
   });
-
-  console.log("result", result);
 }
 
 export default createEslintRule<Options, MessageIds>({
@@ -103,49 +102,47 @@ export default createEslintRule<Options, MessageIds>({
   meta: {
     type: "layout",
     docs: {
-      description: "Sort destructuring keys based on type order",
+      description: "Sort JSX attributes keys based on type order",
     },
     fixable: "code",
-    schema: [
-      {
-        type: "object",
-        properties: {
-          typeNameRegex: {
-            type: "string",
-          },
-          includeAnonymousType: {
-            type: "boolean",
-          },
-        },
-        additionalProperties: false,
-      },
-    ],
+    schema: [],
     messages: {
-      sort: `Expected object keys to be in sorted order by type order. Expected {{first}} to be before {{second}}.`,
+      sort: `Expected JSX attributes to be in sorted order by type order. Expected {{first}} to be before {{second}}.`,
     },
   },
   defaultOptions: [],
   create: (context) => {
-    const options: {
-      typeNameRegex?: string;
-      includeAnonymousType?: boolean;
-    } = Object.assign(
-      { includeAnonymousType: true },
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      context.options[0],
-    );
-
     const services = ESLintUtils.getParserServices(context);
     const typeChecker = services.program.getTypeChecker();
 
     return {
-      JSXIdentifier: (node) =>
-        lintRule({
-          node,
-          services,
-          typeChecker,
-        }),
+      JSXIdentifier(node) {
+        const tsNode = services.esTreeNodeToTSNodeMap.get(node);
+
+        const propsType = typeChecker.getContextualType(tsNode);
+        if (propsType == null) {
+          return;
+        }
+
+        const propsTypePropertiesOrder = typeChecker
+          .getPropertiesOfType(propsType)
+          .map((a) => a.getName());
+
+        const { parent } = node;
+        if (parent?.type !== AST_NODE_TYPES.JSXOpeningElement) {
+          return;
+        }
+        const { attributes } = parent;
+
+        const result = checkOrder({
+          order: propsTypePropertiesOrder,
+          attributes,
+        });
+
+        if (result.type === "lintError") {
+          reportError({ context, result });
+        }
+      },
     };
   },
 });
