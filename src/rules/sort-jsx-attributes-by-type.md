@@ -6,6 +6,8 @@ JSX attributes should be sorted by the matching TypeScript type properties order
 
 🔧💡 This rule is automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix) and manually fixable by [editor suggestions](https://eslint.org/docs/latest/use/core-concepts#rule-suggestions).
 
+![demo-sort-jsx-attributes-by-type.gif](docs/demo-sort-jsx-attributes-by-type.gif)
+
 ## Rule Details
 
 <!-- eslint-skip -->

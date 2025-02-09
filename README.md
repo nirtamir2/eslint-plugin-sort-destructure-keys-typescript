@@ -7,9 +7,7 @@ ESLint plugin rules to sort destructure keys and JSX attributes by TypeScript ty
 The plugin requires `parserServices` to be generated.
 You must therefore provide a value for the `parserOptions.project` property for `@typescript-eslint/parser`.
 
-![sort-destructor-keys-demo.gif](docs/demo-sort-destructor-keys.gif)
-
-![demo-sort-jsx-attributes-by-type.gif](docs/demo-sort-jsx-attributes-by-type.gif)
+![demo-combined.gif](docs/demo-combined.gif)
 
 [Rules List](./src/rules)
 
