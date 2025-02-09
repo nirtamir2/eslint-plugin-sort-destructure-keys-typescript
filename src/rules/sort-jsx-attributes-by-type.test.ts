@@ -96,7 +96,7 @@ interface Props { a: string, b: string }
       errors: [{ messageId: "sort" }],
     },
     {
-      name: "with JSXMemberExpression JSX",
+      name: "with JSXMemberExpression",
       code: `interface Props { a: string, b: string }
 function A(props: Props) {
 }
@@ -111,6 +111,27 @@ function A(props: Props) {
 const B = { A };
 
 <B.A a="1" b="2" />`,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+        only: true,
+      name: "with JSXNamespacedName",
+      code: `declare namespace JSX {
+  interface IntrinsicElements {
+    "A:B": { a: string; b: string };
+  }
+}
+
+<A:B b="2" a="1" />
+`,
+      output: `declare namespace JSX {
+  interface IntrinsicElements {
+    "A:B": { a: string; b: string };
+  }
+}
+
+<A:B a="1" b="2" />
+`,
       errors: [{ messageId: "sort" }],
     },
     {

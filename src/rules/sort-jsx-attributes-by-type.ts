@@ -97,17 +97,21 @@ function reportError({
   });
 }
 
-function getJSXIdentifier(
+function getNodeForContextualType(
   node: TSESTree.JSXOpeningElement,
 ): TSESTree.JSXIdentifier | TSESTree.JSXMemberExpression {
   switch (node.name.type) {
+    // <A a="" />
     case AST_NODE_TYPES.JSXIdentifier: {
       return node.name;
     }
+    // <B.A a="" />
     case AST_NODE_TYPES.JSXMemberExpression: {
       return node.name;
     }
+    // <B:A a="" /> but it's not supported in react
     case AST_NODE_TYPES.JSXNamespacedName: {
+      // IDK
       return node.name.namespace;
     }
   }
@@ -158,9 +162,9 @@ export default createEslintRule<Options, MessageIds>({
 
     return {
       JSXOpeningElement(node) {
-        const jsxIdentifier = getJSXIdentifier(node);
+        const contextualTypeNode = getNodeForContextualType(node);
 
-        const tsNode = services.esTreeNodeToTSNodeMap.get(jsxIdentifier);
+        const tsNode = services.esTreeNodeToTSNodeMap.get(contextualTypeNode);
 
         const propsType = typeChecker.getContextualType(tsNode);
         if (propsType == null) {
