@@ -109,7 +109,7 @@ else the default is to match only components that start with uppercase letter `^
 #### Pass
 
 ```tsx
-// sort-destructure-keys-typescript/sort-jsx-attributes-by-type: ["error", {typeNameRegex: "^(?!ExcludeComponent$|ExcludeComponent2$)[A-Z].*$"}]
+// sort-destructure-keys-typescript/sort-jsx-attributes-by-type: ["error", {componentNameRegex: "^(?!ExcludeComponent$|ExcludeComponent2$)[A-Z].*$"}]
 
 type Props = {
   name: string;
@@ -130,7 +130,7 @@ export function ExcludeComponent(props: Props) {
 <!-- eslint-skip -->
 
 ```tsx
-// sort-destructure-keys-typescript/sort-jsx-attributes-by-type: ["error", {typeNameRegex: "^[A-Z].*$"}]
+// sort-destructure-keys-typescript/sort-jsx-attributes-by-type: ["error", {componentNameRegex: "^[A-Z].*$"}]
 type Props = {
   name: string;
   email: string;

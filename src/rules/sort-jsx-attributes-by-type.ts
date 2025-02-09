@@ -172,9 +172,11 @@ export default createEslintRule<Options, MessageIds>({
       );
     }
     const componentsRegex = new RegExp(
-      (options.componentNameRegex ?? options.includeJSXLowercaseTags)
-        ? MATCH_ALL_REGEX
-        : MATCH_START_WITH_UPPERCASE_LETTER_REGEX,
+      options.componentNameRegex == null
+        ? options.includeJSXLowercaseTags
+          ? MATCH_ALL_REGEX
+          : MATCH_START_WITH_UPPERCASE_LETTER_REGEX
+        : options.componentNameRegex,
     );
 
     const services = ESLintUtils.getParserServices(context);

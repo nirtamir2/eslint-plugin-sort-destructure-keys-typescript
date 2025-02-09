@@ -36,6 +36,27 @@ run({
       options: { includeJSXLowercaseTags: true },
     },
     {
+      name: "option `componentNameRegex` with excluded unordered component",
+      only: true,
+      options: {
+        componentNameRegex: "^(?!ExcludeComponent$|ExcludeComponent2$)[A-Z].*$",
+      },
+      code: tsx`
+
+type Props = {
+  name: string;
+  email: string;
+};
+
+export function ExcludeComponent(props: Props) {
+  return <div />;
+}
+
+// 👍 good - this component is excluded from the rule
+<ExcludeComponent email="email" name="name" />;
+<ExcludeComponent name="name" email="email" />;`,
+    },
+    {
       name: "includeJSXLowercaseTags option false with react unchecked",
       code: tsx`
 
