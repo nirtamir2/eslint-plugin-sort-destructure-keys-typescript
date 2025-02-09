@@ -79,7 +79,6 @@ interface Props { a: string, b: string }
     },
     {
       name: "with unknown props",
-      only: true,
       code: `
 interface Props { a: string, b: string }
         function A(props: Props) {

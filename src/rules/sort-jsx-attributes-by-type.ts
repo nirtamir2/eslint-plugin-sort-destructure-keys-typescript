@@ -97,6 +97,22 @@ function reportError({
   });
 }
 
+function getJSXIdentifier(
+  node: TSESTree.JSXOpeningElement,
+): TSESTree.JSXIdentifier {
+  switch (node.name.type) {
+    case AST_NODE_TYPES.JSXIdentifier: {
+      return node.name;
+    }
+    case AST_NODE_TYPES.JSXMemberExpression: {
+      return node.name.property;
+    }
+    case AST_NODE_TYPES.JSXNamespacedName: {
+      return node.name.namespace;
+    }
+  }
+}
+
 export default createEslintRule<Options, MessageIds>({
   name: RULE_NAME,
   meta: {
@@ -141,8 +157,10 @@ export default createEslintRule<Options, MessageIds>({
     const typeChecker = services.program.getTypeChecker();
 
     return {
-      JSXIdentifier(node) {
-        const tsNode = services.esTreeNodeToTSNodeMap.get(node);
+      JSXOpeningElement(node) {
+        const jsxIdentifier = getJSXIdentifier(node);
+
+        const tsNode = services.esTreeNodeToTSNodeMap.get(jsxIdentifier);
 
         const propsType = typeChecker.getContextualType(tsNode);
         if (propsType == null) {
@@ -153,11 +171,7 @@ export default createEslintRule<Options, MessageIds>({
           .getPropertiesOfType(propsType)
           .map((a) => a.getName());
 
-        const { parent } = node;
-        if (parent?.type !== AST_NODE_TYPES.JSXOpeningElement) {
-          return;
-        }
-        const { attributes } = parent;
+        const { attributes } = node;
 
         const result = checkOrder({
           order: propsTypePropertiesOrder,
