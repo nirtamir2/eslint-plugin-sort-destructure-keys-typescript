@@ -51,7 +51,8 @@ function checkOrder({
     const index = order.indexOf(jsxIdentifierOrNamespaceName);
 
     if (index === -1) {
-      return { type: "error", value, message: "Not in order array" };
+      // This means we have an attribute that not exits in the type - we will ignore it
+      continue;
     }
 
     if (index < lastIndex && lastValue != null) {
