@@ -10,35 +10,34 @@ JSX attributes should be sorted by the matching TypeScript type properties order
 
 <!-- eslint-skip -->
 
-```ts
+```tsx
 type Props = {
   name: string;
   email: string;
 };
 
 export function Example(props: Props) {
-  return <div />
+  return <div />;
 }
 
 // 👎 bad
-<Example email="email" name="name" />
+<Example email="email" name="name" />;
 ```
 
 <!-- eslint-skip -->
 
-```ts
+```tsx
 type Props = {
-    name: string;
-    email: string;
+  name: string;
+  email: string;
 };
 
 export function Example(props: Props) {
-    return <div />
+  return <div />;
 }
 
 // 👍 good
-<Example name="name" email="email" />
-
+<Example name="name" email="email" />;
 ```
 
 ## Options
