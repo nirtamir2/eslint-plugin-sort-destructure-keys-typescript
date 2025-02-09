@@ -59,5 +59,23 @@ type Props = { a: string, b: string };
 `,
       errors: [{ messageId: "sort" }],
     },
+    {
+      name: "with interface",
+      code: `
+interface Props { a: string, b: string }
+        function A(props: Props) {
+}
+
+<A b="2" a="1" />
+`,
+      output: `
+interface Props { a: string, b: string }
+        function A(props: Props) {
+}
+
+<A a="1" b="2" />
+`,
+      errors: [{ messageId: "sort" }],
+    },
   ],
 });
