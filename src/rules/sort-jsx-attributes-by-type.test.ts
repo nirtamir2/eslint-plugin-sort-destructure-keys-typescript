@@ -79,6 +79,28 @@ run({
       errors: [{ messageId: "sort" }],
     },
     {
+      name: "with optional props",
+      code: tsx`
+        interface Props {
+          a?: string;
+          b?: string;
+        }
+        function A(props: Props) {}
+
+        <A b="2" a="1" />;
+      `,
+      output: tsx`
+        interface Props {
+          a?: string;
+          b?: string;
+        }
+        function A(props: Props) {}
+
+        <A a="1" b="2" />;
+      `,
+      errors: [{ messageId: "sort" }],
+    },
+    {
       name: "with unknown props",
       code: tsx`
         interface Props {
