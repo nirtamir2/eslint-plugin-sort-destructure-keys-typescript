@@ -134,10 +134,12 @@ export default createEslintRule<Options, MessageIds>({
         properties: {
           componentNameRegex: {
             type: "string",
+            description:
+              "A regex string to match the component name. If set, it will only apply to the component that matches the regex.",
           },
           includeJSXLowercaseTags: {
             description:
-              "Include JSX tags that start with a lowercase letter like native HTML elements. If set to true it may conflict with other ESLint plugins. Does not applicable if `componentNameRegex` is set.",
+              "Include JSX tags that start with a lowercase letter like native HTML elements. If set to `true` it may conflict with other ESLint plugins. Does not applicable if `componentNameRegex` is set.",
             default: false,
             type: "boolean",
           },

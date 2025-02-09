@@ -44,65 +44,95 @@ export function Example(props: Props) {
 
 Type: `object`
 
-### includeAnonymousType
+### `includeJSXLowercaseTags`
 
 Type: `boolean`
 
-Pass `{includeAnonymousType: false}` to exclude this lint rule from running on anonymous types
-(without an identifier name, inline type)
+Include JSX tags that start with a lowercase letter like native HTML elements. If set to `true` it may conflict with other ESLint plugins. Does not applicable if `componentNameRegex` is set.
 
-Default: `{includeAnonymousType: true}`
+Default: `{includeJSXLowercaseTags: false}`
 
 #### Pass
 
-```ts
-// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {includeAnonymousType: false}]}]
+```tsx
+// sort-destructure-keys-typescript/sort-jsx-attributes-by-type: ["error", {includeJSXLowercaseTags: true}]}]
 
-export function Example(props: { name: string; email: string }) {
-  const { email, name } = props;
-}
+/// <reference types="react" />
+/// <reference types="react-dom" />
+
+// 👍 good - key is declared in React JSX before classNames
+<div key="key" className="border" />
+```
+
+```tsx
+// sort-destructure-keys-typescript/sort-jsx-attributes-by-type: ["error", {includeJSXLowercaseTags: false}]}]
+
+/// <reference types="react" />
+/// <reference types="react-dom" />
+
+// 👍 good - we don't include native HTML elements so the order does not natter here
+<>
+  <div className="border" key="key" />
+  <div key="key" className="border" />
+</>
 ```
 
 #### Fail
 
 <!-- eslint-skip -->
 
-```ts
-// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {includeAnonymousType: true}]}]
+```tsx
+// sort-destructure-keys-typescript/sort-jsx-attributes-by-type: ["error", {includeJSXLowercaseTags: true}]}]
 
-export function Example(props: { name: string; email: string }) {
-  const { email, name } = props;
-}
+/// <reference types="react" />
+/// <reference types="react-dom" />
+
+// 👍 bad - key is declared in React JSX before classNames
+<div className="border" key="key" />
 ```
 
 <!-- eslint-skip -->
 
-### typeNameRegex
+### componentNameRegex
 
 Type: `string`
 
-Pass `{typeNameRegex: "Props|MyTypeName"}` to lint-only types that their name match the regex
+Pass `{componentNameRegex: "ComponentA|ComponentB"}` to lint-only components that their name match the regex
+
+Pass `{componentNameRegex: "^(?!ExcludeComponent$|ExcludeComponent2$)[A-Z].*$"}`
+to exclude native HTML components and exclude components named `ExcludeComponent` or `ExcludeComponent2`
+
+Pass `{componentNameRegex: "^(?!ExcludeComponent$|ExcludeComponent2$).*$"}`
+to include native HTML components and exclude components named `ExcludeComponent` or `ExcludeComponent2`
+
+If `includeJSXLowercaseTags` is set to `true`, the default is to match all components with `^.*$`,
+else the default is to match only components that start with uppercase letter `^[A-Z].*$`.
 
 #### Pass
 
-```ts
-// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {typeNameRegex: "^(?!.*Props).*$"}]
+```tsx
+// sort-destructure-keys-typescript/sort-jsx-attributes-by-type: ["error", {typeNameRegex: "^(?!ExcludeComponent$|ExcludeComponent2$)[A-Z].*$"}]
+
 type Props = {
   name: string;
   email: string;
 };
 
-export function Example(props: Props) {
-  const { email, name } = props;
+export function ExcludeComponent(props: Props) {
+  return <div />;
 }
+
+// 👍 good - this component is excluded from the rule
+<ExcludeComponent email="email" name="name" />;
+<ExcludeComponent name="name" email="email" />;
 ```
 
 #### Fail
 
 <!-- eslint-skip -->
 
-```ts
-// sort-destructure-keys-typescript/sort-destructure-keys-by-type: ["error", {typeNameRegex: "Props|Other"}]
+```tsx
+// sort-destructure-keys-typescript/sort-jsx-attributes-by-type: ["error", {typeNameRegex: "^[A-Z].*$"}]
 type Props = {
   name: string;
   email: string;
@@ -111,6 +141,9 @@ type Props = {
 export function Example(props: Props) {
   const { email, name } = props;
 }
+
+// 👎 bad - name should be before email
+<Example email="email" name="name" />;
 ```
 
 <!-- eslint-skip -->
