@@ -71,10 +71,8 @@ Default: `{includeJSXLowercaseTags: false}`
 /// <reference types="react-dom" />
 
 // 👍 good - we don't include native HTML elements so the order does not natter here
-<>
-  <div className="border" key="key" />
-  <div key="key" className="border" />
-</>
+<div className="border" key="key" />;
+<div key="key" className="border" />;
 ```
 
 #### Fail
