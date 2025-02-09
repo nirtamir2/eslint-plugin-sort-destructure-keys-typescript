@@ -65,6 +65,8 @@
     "@types/eslint": "^9.6.0",
     "@types/lodash.merge": "^4.6.9",
     "@types/node": "^22.0.2",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
     "@types/semver": "^7.5.8",
     "@typescript-eslint/typescript-estree": "^8.0.0",
     "@typescript-eslint/utils": "^8.0.0",
