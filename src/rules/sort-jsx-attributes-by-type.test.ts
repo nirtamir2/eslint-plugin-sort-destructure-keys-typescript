@@ -19,53 +19,49 @@ run({
   },
   valid: [
     tsx`
-        function A(props: { a: string, b: string }) {
-}
+      function A(props: { a: string; b: string }) {}
 
-<A a="1" b="2" />
-`,
+      <A a="1" b="2" />;
+    `,
     {
       name: "includeJSXLowercaseTags option true with react ordered correctly",
       code: tsx`
+        /// <reference types="react" />
+        /// <reference types="react-dom" />
 
-/// <reference types="react" />
-/// <reference types="react-dom" />
-
-<div key="key" className="border" />
-    `,
+        <div key="key" className="border" />;
+      `,
       options: { includeJSXLowercaseTags: true },
     },
     {
       name: "option `componentNameRegex` with excluded unordered component",
-      only: true,
       options: {
         componentNameRegex: "^(?!ExcludeComponent$|ExcludeComponent2$)[A-Z].*$",
       },
       code: tsx`
+        type Props = {
+          name: string;
+          email: string;
+        };
 
-type Props = {
-  name: string;
-  email: string;
-};
+        export function ExcludeComponent(props: Props) {
+          return <div />;
+        }
 
-export function ExcludeComponent(props: Props) {
-  return <div />;
-}
-
-// 👍 good - this component is excluded from the rule
-<ExcludeComponent email="email" name="name" />;
-<ExcludeComponent name="name" email="email" />;`,
+        // 👍 good - this component is excluded from the rule
+        <ExcludeComponent email="email" name="name" />;
+        <ExcludeComponent name="name" email="email" />;
+      `,
     },
     {
       name: "includeJSXLowercaseTags option false with react unchecked",
       code: tsx`
+        /// <reference types="react" />
+        /// <reference types="react-dom" />
 
-/// <reference types="react" />
-/// <reference types="react-dom" />
-
-<div className="border" key="key" />;
-<div key="key" className="border" />;
-    `,
+        <div className="border" key="key" />;
+        <div key="key" className="border" />;
+      `,
       options: { includeJSXLowercaseTags: false },
     },
   ],
@@ -74,19 +70,17 @@ export function ExcludeComponent(props: Props) {
       name: "includeJSXLowercaseTags true option with react with unordered",
       options: { includeJSXLowercaseTags: true },
       code: tsx`
+        /// <reference types="react" />
+        /// <reference types="react-dom" />
 
-/// <reference types="react" />
-/// <reference types="react-dom" />
-
-<div className="border" key="key" />
-    `,
+        <div className="border" key="key" />;
+      `,
       output: tsx`
+        /// <reference types="react" />
+        /// <reference types="react-dom" />
 
-/// <reference types="react" />
-/// <reference types="react-dom" />
-
-<div key="key" className="border" />
-    `,
+        <div key="key" className="border" />;
+      `,
       errors: [{ messageId: "sort" }],
     },
     {
@@ -332,6 +326,39 @@ export function ExcludeComponent(props: Props) {
         function A(props: Props) {}
 
         <A a="1" {...{ c: "" }} b="2" />;
+      `,
+      errors: [{ messageId: "sort" }],
+    },
+    {
+      name: "option `componentNameRegex` not excluded unordered component",
+      options: {
+        componentNameRegex: "^[A-Z].*$",
+      },
+      code: tsx`
+        type Props = {
+          name: string;
+          email: string;
+        };
+
+        export function Example(props: Props) {
+          const { email, name } = props;
+        }
+
+        // 👎 bad - name should be before email
+        <Example email="email" name="name" />;
+      `,
+      output: tsx`
+        type Props = {
+          name: string;
+          email: string;
+        };
+
+        export function Example(props: Props) {
+          const { email, name } = props;
+        }
+
+        // 👎 bad - name should be before email
+        <Example name="name" email="email" />;
       `,
       errors: [{ messageId: "sort" }],
     },
