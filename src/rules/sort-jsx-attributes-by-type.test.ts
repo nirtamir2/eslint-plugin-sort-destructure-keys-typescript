@@ -48,7 +48,6 @@ run({
           return <div />;
         }
 
-        // 👍 good - this component is excluded from the rule
         <ExcludeComponent email="email" name="name" />;
         <ExcludeComponent name="name" email="email" />;
       `,
@@ -344,7 +343,6 @@ run({
           const { email, name } = props;
         }
 
-        // 👎 bad - name should be before email
         <Example email="email" name="name" />;
       `,
       output: tsx`
@@ -357,7 +355,6 @@ run({
           const { email, name } = props;
         }
 
-        // 👎 bad - name should be before email
         <Example name="name" email="email" />;
       `,
       errors: [{ messageId: "sort" }],
