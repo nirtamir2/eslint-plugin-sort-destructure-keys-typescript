@@ -1,7 +1,6 @@
 import type { TSESTree } from "@typescript-eslint/types";
 import { AST_NODE_TYPES, ESLintUtils } from "@typescript-eslint/utils";
 import type * as TSESLint from "@typescript-eslint/utils/ts-eslint";
-import type ts from "typescript";
 import { createEslintRule } from "../utils";
 
 export const RULE_NAME = "sort-destructure-keys-by-type";
@@ -56,16 +55,7 @@ function calculateTypeDeclarationOrder({
 }) {
   const services = ESLintUtils.getParserServices(context);
   const type = services.getTypeAtLocation(node);
-  return getTypeDeclarationOrder({ type, options });
-}
 
-function getTypeDeclarationOrder({
-  type,
-  options,
-}: {
-  type: ts.Type;
-  options: { typeNameRegex?: string; includeAnonymousType?: boolean };
-}) {
   const typeDeclarationsOrder: Array<string> = [];
   const typeName = type.symbol?.escapedName;
   if (
@@ -85,61 +75,6 @@ function getTypeDeclarationOrder({
   }
 
   return typeDeclarationsOrder;
-}
-
-function checkProperty({
-  property,
-  context,
-  options,
-}: {
-  property: TSESTree.Property | TSESTree.RestElement;
-  context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
-  options: { typeNameRegex?: string; includeAnonymousType?: boolean };
-}) {
-  if (
-    property.value == null ||
-    property.value.type !== AST_NODE_TYPES.ObjectPattern
-  ) {
-    return;
-  }
-  const nestedDestructuringVariableDeclarations: Array<TSESTree.Identifier> =
-    [];
-
-  for (const nestedProperty of property.value.properties) {
-    if (nestedProperty.value == null) {
-      continue;
-    }
-    switch (nestedProperty.value.type) {
-      case AST_NODE_TYPES.ObjectPattern: {
-        checkProperty({ property: nestedProperty, context, options });
-        break;
-      }
-      case AST_NODE_TYPES.Identifier: {
-        nestedDestructuringVariableDeclarations.push(nestedProperty.value);
-        break;
-      }
-      case AST_NODE_TYPES.AssignmentPattern: {
-        const leftProperty = nestedProperty.value.left;
-        if (leftProperty.type === AST_NODE_TYPES.Identifier) {
-          nestedDestructuringVariableDeclarations.push(leftProperty);
-        }
-        break;
-      }
-    }
-  }
-  const order = calculateTypeDeclarationOrder({
-    node: property,
-    context,
-    options,
-  });
-
-  const result = checkOrder({
-    order,
-    values: nestedDestructuringVariableDeclarations,
-  });
-  if (result.type === "lintError") {
-    reportError({ context, result });
-  }
 }
 
 function reportError({
@@ -174,44 +109,68 @@ function reportError({
   });
 }
 
-function handleObjectPattern({
-  objectPatternNode,
+function checkObjectPattern({
+  node,
   context,
   options,
 }: {
-  objectPatternNode: TSESTree.ObjectPattern;
+  node: TSESTree.ObjectPattern;
   context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
   options: { typeNameRegex?: string; includeAnonymousType?: boolean };
 }) {
-  const nestedTypesOrder = calculateTypeDeclarationOrder({
-    node: objectPatternNode,
+  const typesOrder = calculateTypeDeclarationOrder({
+    node,
     context,
     options,
   });
 
-  const nestedIdentifiers: Array<TSESTree.Identifier> = [];
-  for (const nestedProperty of objectPatternNode.properties) {
-    if (
-      nestedProperty.type === AST_NODE_TYPES.Property &&
-      nestedProperty.key.type === AST_NODE_TYPES.Identifier
-    ) {
-      nestedIdentifiers.push(nestedProperty.key);
+  const identifiers: Array<TSESTree.Identifier> = [];
+  for (const property of node.properties) {
+    if (property.value == null) {
+      continue;
     }
-    if (
-      nestedProperty.value != null &&
-      nestedProperty.value.type === AST_NODE_TYPES.ObjectPattern
-    ) {
-      handleObjectPattern({
-        objectPatternNode: nestedProperty.value,
-        context,
-        options,
-      });
+    if (property.type !== AST_NODE_TYPES.Property) {
+      continue;
+    }
+    switch (property.value.type) {
+      case AST_NODE_TYPES.ObjectPattern: {
+        checkObjectPattern({
+          node: property.value,
+          context,
+          options,
+        });
+        if (property.key.type === AST_NODE_TYPES.Identifier) {
+          identifiers.push(property.key);
+        }
+        break;
+      }
+      case AST_NODE_TYPES.Identifier: {
+        identifiers.push(property.value);
+        break;
+      }
+      case AST_NODE_TYPES.AssignmentPattern: {
+        const leftProperty = property.value.left;
+        if (leftProperty.type === AST_NODE_TYPES.Identifier) {
+          identifiers.push(leftProperty);
+        }
+        if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
+          checkObjectPattern({
+            node: leftProperty,
+            context,
+            options,
+          });
+          if (property.key.type === AST_NODE_TYPES.Identifier) {
+            identifiers.push(property.key);
+          }
+        }
+        break;
+      }
     }
   }
 
   const result = checkOrder({
-    order: nestedTypesOrder,
-    values: nestedIdentifiers,
+    order: typesOrder,
+    values: identifiers,
   });
   if (result.type === "lintError") {
     reportError({ context, result });
@@ -241,7 +200,7 @@ export default createEslintRule<Options, MessageIds>({
       },
     ],
     messages: {
-      sort: `Expected object keys to be in sorted order by type order. Expected {{first}} to be before {{second}}.`,
+      sort: `Expected object keys to be sorted order by type order. Expected \`{{first}}\` to be before \`{{second}}\`.`,
     },
   },
   defaultOptions: [],
@@ -259,62 +218,12 @@ export default createEslintRule<Options, MessageIds>({
     return {
       VariableDeclaration(node) {
         for (const declaration of node.declarations) {
-          const destructuringVariableDeclarations: Array<TSESTree.Identifier> =
-            [];
-
           if (declaration.id.type === AST_NODE_TYPES.ObjectPattern) {
-            for (const property of declaration.id.properties) {
-              if (property.type === AST_NODE_TYPES.Property) {
-                switch (property.value.type) {
-                  case AST_NODE_TYPES.ObjectPattern: {
-                    checkProperty({ property, context, options });
-                    if (property.key.type === AST_NODE_TYPES.Identifier) {
-                      destructuringVariableDeclarations.push(property.key);
-                    }
-                    break;
-                  }
-                  case AST_NODE_TYPES.Identifier: {
-                    destructuringVariableDeclarations.push(property.value);
-                    break;
-                  }
-                  case AST_NODE_TYPES.AssignmentPattern: {
-                    if (property.key.type === AST_NODE_TYPES.Identifier) {
-                      destructuringVariableDeclarations.push(property.key);
-                    }
-
-                    const leftProperty = property.value.left;
-                    if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
-                      handleObjectPattern({
-                        objectPatternNode: leftProperty,
-                        context,
-                        options,
-                      });
-                    }
-                    break;
-                  }
-                }
-              }
-            }
-          }
-
-          if (
-            declaration.init == null ||
-            declaration.init.type !== AST_NODE_TYPES.Identifier
-          ) {
-            return;
-          }
-
-          const typeDeclarationOrder = calculateTypeDeclarationOrder({
-            node: declaration.init,
-            context,
-            options,
-          });
-          const result = checkOrder({
-            order: typeDeclarationOrder,
-            values: destructuringVariableDeclarations,
-          });
-          if (result.type === "lintError") {
-            reportError({ context, result });
+            checkObjectPattern({
+              node: declaration.id,
+              context,
+              options,
+            });
           }
         }
       },
