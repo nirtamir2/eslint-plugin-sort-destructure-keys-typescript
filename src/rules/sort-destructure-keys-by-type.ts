@@ -129,6 +129,9 @@ function handleObjectPattern({
     if (nestedProperty.value == null) {
       continue;
     }
+    if (nestedProperty.type !== AST_NODE_TYPES.Property) {
+      continue;
+    }
     switch (nestedProperty.value.type) {
       case AST_NODE_TYPES.ObjectPattern: {
         handleObjectPattern({
@@ -136,6 +139,9 @@ function handleObjectPattern({
           context,
           options,
         });
+        if (nestedProperty.key.type === AST_NODE_TYPES.Identifier) {
+          nestedIdentifiers.push(nestedProperty.key);
+        }
         break;
       }
       case AST_NODE_TYPES.Identifier: {
