@@ -159,6 +159,9 @@ function handleObjectPattern({
             context,
             options,
           });
+          if (nestedProperty.key.type === AST_NODE_TYPES.Identifier) {
+            nestedIdentifiers.push(nestedProperty.key);
+          }
         }
         break;
       }
@@ -215,66 +218,12 @@ export default createEslintRule<Options, MessageIds>({
     return {
       VariableDeclaration(node) {
         for (const declaration of node.declarations) {
-          const destructuringVariableDeclarations: Array<TSESTree.Identifier> =
-            [];
-
           if (declaration.id.type === AST_NODE_TYPES.ObjectPattern) {
-            for (const property of declaration.id.properties) {
-              if (property.type === AST_NODE_TYPES.Property) {
-                switch (property.value.type) {
-                  case AST_NODE_TYPES.ObjectPattern: {
-                    handleObjectPattern({
-                      objectPatternNode: property.value,
-                      context,
-                      options,
-                    });
-                    if (property.key.type === AST_NODE_TYPES.Identifier) {
-                      destructuringVariableDeclarations.push(property.key);
-                    }
-                    break;
-                  }
-                  case AST_NODE_TYPES.Identifier: {
-                    destructuringVariableDeclarations.push(property.value);
-                    break;
-                  }
-                  case AST_NODE_TYPES.AssignmentPattern: {
-                    if (property.key.type === AST_NODE_TYPES.Identifier) {
-                      destructuringVariableDeclarations.push(property.key);
-                    }
-
-                    const leftProperty = property.value.left;
-                    if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
-                      handleObjectPattern({
-                        objectPatternNode: leftProperty,
-                        context,
-                        options,
-                      });
-                    }
-                    break;
-                  }
-                }
-              }
-            }
-          }
-
-          if (
-            declaration.init == null ||
-            declaration.init.type !== AST_NODE_TYPES.Identifier
-          ) {
-            return;
-          }
-
-          const typeDeclarationOrder = calculateTypeDeclarationOrder({
-            node: declaration.init,
-            context,
-            options,
-          });
-          const result = checkOrder({
-            order: typeDeclarationOrder,
-            values: destructuringVariableDeclarations,
-          });
-          if (result.type === "lintError") {
-            reportError({ context, result });
+            handleObjectPattern({
+              objectPatternNode: declaration.id,
+              context,
+              options,
+            });
           }
         }
       },
