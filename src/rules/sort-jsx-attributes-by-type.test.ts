@@ -232,15 +232,11 @@ run({
         /// <reference types="@types/react" />
         /// <reference types="@types/react-dom" />
 
-        import * as React from "react";
-
         <button className="a" type="button" />;
       `,
       output: tsx`
         /// <reference types="@types/react" />
         /// <reference types="@types/react-dom" />
-
-        import * as React from "react";
 
         <button type="button" className="a" />;
       `,
@@ -253,8 +249,6 @@ run({
         /// <reference types="@types/react" />
         /// <reference types="@types/react-dom" />
 
-        import * as React from "react";
-
         interface Props {
           a: string;
           b: string;
@@ -266,8 +260,6 @@ run({
       output: tsx`
         /// <reference types="@types/react" />
         /// <reference types="@types/react-dom" />
-
-        import * as React from "react";
 
         interface Props {
           a: string;
