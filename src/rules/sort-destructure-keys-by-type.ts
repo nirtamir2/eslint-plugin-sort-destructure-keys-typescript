@@ -109,23 +109,23 @@ function reportError({
   });
 }
 
-function handleObjectPattern({
-  objectPatternNode,
+function checkObjectPattern({
+  node,
   context,
   options,
 }: {
-  objectPatternNode: TSESTree.ObjectPattern;
+  node: TSESTree.ObjectPattern;
   context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
   options: { typeNameRegex?: string; includeAnonymousType?: boolean };
 }) {
   const typesOrder = calculateTypeDeclarationOrder({
-    node: objectPatternNode,
+    node,
     context,
     options,
   });
 
   const identifiers: Array<TSESTree.Identifier> = [];
-  for (const property of objectPatternNode.properties) {
+  for (const property of node.properties) {
     if (property.value == null) {
       continue;
     }
@@ -134,8 +134,8 @@ function handleObjectPattern({
     }
     switch (property.value.type) {
       case AST_NODE_TYPES.ObjectPattern: {
-        handleObjectPattern({
-          objectPatternNode: property.value,
+        checkObjectPattern({
+          node: property.value,
           context,
           options,
         });
@@ -154,8 +154,8 @@ function handleObjectPattern({
           identifiers.push(leftProperty);
         }
         if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
-          handleObjectPattern({
-            objectPatternNode: leftProperty,
+          checkObjectPattern({
+            node: leftProperty,
             context,
             options,
           });
@@ -219,8 +219,8 @@ export default createEslintRule<Options, MessageIds>({
       VariableDeclaration(node) {
         for (const declaration of node.declarations) {
           if (declaration.id.type === AST_NODE_TYPES.ObjectPattern) {
-            handleObjectPattern({
-              objectPatternNode: declaration.id,
+            checkObjectPattern({
+              node: declaration.id,
               context,
               options,
             });
