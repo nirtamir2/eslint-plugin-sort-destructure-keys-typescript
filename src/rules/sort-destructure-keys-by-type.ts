@@ -87,68 +87,6 @@ function getTypeDeclarationOrder({
   return typeDeclarationsOrder;
 }
 
-function checkProperty({
-  property,
-  context,
-  options,
-}: {
-  property: TSESTree.Property | TSESTree.RestElement;
-  context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
-  options: { typeNameRegex?: string; includeAnonymousType?: boolean };
-}) {
-  if (
-    property.value == null ||
-    property.value.type !== AST_NODE_TYPES.ObjectPattern
-  ) {
-    return;
-  }
-  const nestedDestructuringVariableDeclarations: Array<TSESTree.Identifier> =
-    [];
-
-  for (const nestedProperty of property.value.properties) {
-    if (nestedProperty.value == null) {
-      continue;
-    }
-    switch (nestedProperty.value.type) {
-      case AST_NODE_TYPES.ObjectPattern: {
-        checkProperty({ property: nestedProperty, context, options });
-        break;
-      }
-      case AST_NODE_TYPES.Identifier: {
-        nestedDestructuringVariableDeclarations.push(nestedProperty.value);
-        break;
-      }
-      case AST_NODE_TYPES.AssignmentPattern: {
-        const leftProperty = nestedProperty.value.left;
-        if (leftProperty.type === AST_NODE_TYPES.Identifier) {
-          nestedDestructuringVariableDeclarations.push(leftProperty);
-        }
-        if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
-          handleObjectPattern({
-            objectPatternNode: leftProperty,
-            context,
-            options,
-          });
-        }
-        break;
-      }
-    }
-  }
-  const order = calculateTypeDeclarationOrder({
-    node: property,
-    context,
-    options,
-  });
-
-  const result = checkOrder({
-    order,
-    values: nestedDestructuringVariableDeclarations,
-  });
-  if (result.type === "lintError") {
-    reportError({ context, result });
-  }
-}
-
 function reportError({
   context,
   result,
@@ -198,21 +136,36 @@ function handleObjectPattern({
 
   const nestedIdentifiers: Array<TSESTree.Identifier> = [];
   for (const nestedProperty of objectPatternNode.properties) {
-    if (
-      nestedProperty.type === AST_NODE_TYPES.Property &&
-      nestedProperty.key.type === AST_NODE_TYPES.Identifier
-    ) {
-      nestedIdentifiers.push(nestedProperty.key);
+    if (nestedProperty.value == null) {
+      continue;
     }
-    if (
-      nestedProperty.value != null &&
-      nestedProperty.value.type === AST_NODE_TYPES.ObjectPattern
-    ) {
-      handleObjectPattern({
-        objectPatternNode: nestedProperty.value,
-        context,
-        options,
-      });
+    switch (nestedProperty.value.type) {
+      case AST_NODE_TYPES.ObjectPattern: {
+        handleObjectPattern({
+          objectPatternNode: nestedProperty.value,
+          context,
+          options,
+        });
+        break;
+      }
+      case AST_NODE_TYPES.Identifier: {
+        nestedIdentifiers.push(nestedProperty.value);
+        break;
+      }
+      case AST_NODE_TYPES.AssignmentPattern: {
+        const leftProperty = nestedProperty.value.left;
+        if (leftProperty.type === AST_NODE_TYPES.Identifier) {
+          nestedIdentifiers.push(leftProperty);
+        }
+        if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
+          handleObjectPattern({
+            objectPatternNode: leftProperty,
+            context,
+            options,
+          });
+        }
+        break;
+      }
     }
   }
 
@@ -274,7 +227,11 @@ export default createEslintRule<Options, MessageIds>({
               if (property.type === AST_NODE_TYPES.Property) {
                 switch (property.value.type) {
                   case AST_NODE_TYPES.ObjectPattern: {
-                    checkProperty({ property, context, options });
+                    handleObjectPattern({
+                      objectPatternNode: property.value,
+                      context,
+                      options,
+                    });
                     if (property.key.type === AST_NODE_TYPES.Identifier) {
                       destructuringVariableDeclarations.push(property.key);
                     }
