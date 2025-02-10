@@ -2,7 +2,6 @@ import typescriptEslintParser from "@typescript-eslint/parser";
 import { any as tsx } from "code-tag";
 import { run } from "./_test";
 import rule, { RULE_NAME } from "./sort-jsx-attributes-by-type";
-import {isCI} from "ci-info"
 
 run({
   name: RULE_NAME,
@@ -25,7 +24,6 @@ run({
       <A a="1" b="2" />;
     `,
     {
-      skip: isCI,
       name: "includeJSXLowercaseTags option true with react ordered correctly",
       code: tsx`
         /// <reference types="react" />
@@ -56,7 +54,6 @@ run({
     },
     {
       name: "includeJSXLowercaseTags option false with react unchecked",
-      skip: isCI,
       code: tsx`
         /// <reference types="react" />
         /// <reference types="react-dom" />
@@ -71,7 +68,6 @@ run({
     {
       name: "includeJSXLowercaseTags true option with react with unordered",
       options: { includeJSXLowercaseTags: true },
-      skip: isCI,
       code: tsx`
         /// <reference types="react" />
         /// <reference types="react-dom" />
@@ -232,25 +228,23 @@ run({
     },
     {
       name: "with react basic",
-      skip: isCI,
       code: tsx`
         /// <reference types="react" />
         /// <reference types="react-dom" />
 
-        <button className="a" type="button" />;
+        <button type="button" key="a" />;
       `,
       output: tsx`
         /// <reference types="react" />
         /// <reference types="react-dom" />
 
-        <button type="button" className="a" />;
+        <button key="a" type="button" />;
       `,
 
       errors: [{ messageId: "sort" }],
     },
     {
       name: "with react",
-      skip: isCI,
       code: tsx`
         /// <reference types="react" />
         /// <reference types="react-dom" />
