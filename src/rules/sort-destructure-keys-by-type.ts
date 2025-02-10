@@ -1,7 +1,6 @@
 import type { TSESTree } from "@typescript-eslint/types";
 import { AST_NODE_TYPES, ESLintUtils } from "@typescript-eslint/utils";
 import type * as TSESLint from "@typescript-eslint/utils/ts-eslint";
-import type ts from "typescript";
 import { createEslintRule } from "../utils";
 
 export const RULE_NAME = "sort-destructure-keys-by-type";
@@ -56,16 +55,7 @@ function calculateTypeDeclarationOrder({
 }) {
   const services = ESLintUtils.getParserServices(context);
   const type = services.getTypeAtLocation(node);
-  return getTypeDeclarationOrder({ type, options });
-}
 
-function getTypeDeclarationOrder({
-  type,
-  options,
-}: {
-  type: ts.Type;
-  options: { typeNameRegex?: string; includeAnonymousType?: boolean };
-}) {
   const typeDeclarationsOrder: Array<string> = [];
   const typeName = type.symbol?.escapedName;
   if (
