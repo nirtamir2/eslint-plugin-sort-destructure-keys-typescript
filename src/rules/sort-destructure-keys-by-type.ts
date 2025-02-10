@@ -118,40 +118,40 @@ function handleObjectPattern({
   context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
   options: { typeNameRegex?: string; includeAnonymousType?: boolean };
 }) {
-  const nestedTypesOrder = calculateTypeDeclarationOrder({
+  const typesOrder = calculateTypeDeclarationOrder({
     node: objectPatternNode,
     context,
     options,
   });
 
-  const nestedIdentifiers: Array<TSESTree.Identifier> = [];
-  for (const nestedProperty of objectPatternNode.properties) {
-    if (nestedProperty.value == null) {
+  const identifiers: Array<TSESTree.Identifier> = [];
+  for (const property of objectPatternNode.properties) {
+    if (property.value == null) {
       continue;
     }
-    if (nestedProperty.type !== AST_NODE_TYPES.Property) {
+    if (property.type !== AST_NODE_TYPES.Property) {
       continue;
     }
-    switch (nestedProperty.value.type) {
+    switch (property.value.type) {
       case AST_NODE_TYPES.ObjectPattern: {
         handleObjectPattern({
-          objectPatternNode: nestedProperty.value,
+          objectPatternNode: property.value,
           context,
           options,
         });
-        if (nestedProperty.key.type === AST_NODE_TYPES.Identifier) {
-          nestedIdentifiers.push(nestedProperty.key);
+        if (property.key.type === AST_NODE_TYPES.Identifier) {
+          identifiers.push(property.key);
         }
         break;
       }
       case AST_NODE_TYPES.Identifier: {
-        nestedIdentifiers.push(nestedProperty.value);
+        identifiers.push(property.value);
         break;
       }
       case AST_NODE_TYPES.AssignmentPattern: {
-        const leftProperty = nestedProperty.value.left;
+        const leftProperty = property.value.left;
         if (leftProperty.type === AST_NODE_TYPES.Identifier) {
-          nestedIdentifiers.push(leftProperty);
+          identifiers.push(leftProperty);
         }
         if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
           handleObjectPattern({
@@ -159,8 +159,8 @@ function handleObjectPattern({
             context,
             options,
           });
-          if (nestedProperty.key.type === AST_NODE_TYPES.Identifier) {
-            nestedIdentifiers.push(nestedProperty.key);
+          if (property.key.type === AST_NODE_TYPES.Identifier) {
+            identifiers.push(property.key);
           }
         }
         break;
@@ -169,8 +169,8 @@ function handleObjectPattern({
   }
 
   const result = checkOrder({
-    order: nestedTypesOrder,
-    values: nestedIdentifiers,
+    order: typesOrder,
+    values: identifiers,
   });
   if (result.type === "lintError") {
     reportError({ context, result });
