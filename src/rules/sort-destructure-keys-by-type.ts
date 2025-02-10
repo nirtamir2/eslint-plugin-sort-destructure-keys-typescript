@@ -123,6 +123,13 @@ function checkProperty({
         if (leftProperty.type === AST_NODE_TYPES.Identifier) {
           nestedDestructuringVariableDeclarations.push(leftProperty);
         }
+        if (leftProperty.type === AST_NODE_TYPES.ObjectPattern) {
+          handleObjectPattern({
+            objectPatternNode: leftProperty,
+            context,
+            options,
+          });
+        }
         break;
       }
     }

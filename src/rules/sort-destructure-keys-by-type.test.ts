@@ -284,6 +284,58 @@ run({
       errors: [{ messageId: "sort" }],
     },
     {
+      description: "nested object destructuring with default attributes 2",
+      code: ts`
+        interface Level3 {
+          a: string;
+          b: string;
+        }
+
+        interface Level2 {
+          level3: Level3;
+          a: string;
+          b: string;
+        }
+
+        interface Level1 {
+          level2: Level2;
+          a: string;
+          b: string;
+        }
+
+        export function Example_3(level1: Level1): void {
+          const {
+            level2: { level3: { b, a } = { a: "1", b: "2" } },
+          } = level1;
+        }
+      `,
+      output: ts`
+        interface Level3 {
+          a: string;
+          b: string;
+        }
+
+        interface Level2 {
+          level3: Level3;
+          a: string;
+          b: string;
+        }
+
+        interface Level1 {
+          level2: Level2;
+          a: string;
+          b: string;
+        }
+
+        export function Example_3(level1: Level1): void {
+          const {
+            level2: { level3: { a, b } = { a: "1", b: "2" } },
+          } = level1;
+        }
+      `,
+      errors: [{ messageId: "sort" }],
+    },
+    {
       description:
         "nested object destructuring with default value for parent complex",
       code: ts`
