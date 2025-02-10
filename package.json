@@ -1,7 +1,7 @@
 {
   "name": "eslint-plugin-sort-destructure-keys-typescript",
   "type": "module",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "packageManager": "pnpm@9.5.0",
   "description": "ESLint plugin to sort destructure keys by typescript type order",
   "author": "Nir Tamir <nirtamir2@gmail.com>",
