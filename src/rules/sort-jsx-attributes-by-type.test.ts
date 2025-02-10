@@ -26,8 +26,8 @@ run({
     {
       name: "includeJSXLowercaseTags option true with react ordered correctly",
       code: tsx`
-        /// <reference types="react" />
-        /// <reference types="react-dom" />
+        /// <reference types="@types/react" />
+        /// <reference types="@types/react-dom" />
 
         <div key="key" className="border" />;
       `,
@@ -55,8 +55,8 @@ run({
     {
       name: "includeJSXLowercaseTags option false with react unchecked",
       code: tsx`
-        /// <reference types="react" />
-        /// <reference types="react-dom" />
+        /// <reference types="@types/react" />
+        /// <reference types="@types/react-dom" />
 
         <div className="border" key="key" />;
         <div key="key" className="border" />;
@@ -69,14 +69,14 @@ run({
       name: "includeJSXLowercaseTags true option with react with unordered",
       options: { includeJSXLowercaseTags: true },
       code: tsx`
-        /// <reference types="react" />
-        /// <reference types="react-dom" />
+        /// <reference types="@types/react" />
+        /// <reference types="@types/react-dom" />
 
         <div className="border" key="key" />;
       `,
       output: tsx`
-        /// <reference types="react" />
-        /// <reference types="react-dom" />
+        /// <reference types="@types/react" />
+        /// <reference types="@types/react-dom" />
 
         <div key="key" className="border" />;
       `,
@@ -229,16 +229,16 @@ run({
     {
       name: "with react basic",
       code: tsx`
-        /// <reference types="react" />
-        /// <reference types="react-dom" />
+        /// <reference types="@types/react" />
+        /// <reference types="@types/react-dom" />
 
         import * as React from "react";
 
         <button className="a" type="button" />;
       `,
       output: tsx`
-        /// <reference types="react" />
-        /// <reference types="react-dom" />
+        /// <reference types="@types/react" />
+        /// <reference types="@types/react-dom" />
 
         import * as React from "react";
 
@@ -250,8 +250,8 @@ run({
     {
       name: "with react",
       code: tsx`
-        /// <reference types="react" />
-        /// <reference types="react-dom" />
+        /// <reference types="@types/react" />
+        /// <reference types="@types/react-dom" />
 
         import * as React from "react";
 
@@ -264,8 +264,8 @@ run({
         <A b="2" a="1" />;
       `,
       output: tsx`
-        /// <reference types="react" />
-        /// <reference types="react-dom" />
+        /// <reference types="@types/react" />
+        /// <reference types="@types/react-dom" />
 
         import * as React from "react";
 
