@@ -6,9 +6,7 @@ Keys in an object pattern should be sorted by the matching TypeScript type prope
 
 🔧💡 This rule is automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix) and manually fixable by [editor suggestions](https://eslint.org/docs/latest/use/core-concepts#rule-suggestions).
 
-
 ![sort-destructor-keys-demo.gif](docs/demo-sort-destructor-keys.gif)
-
 
 ## Rule Details
 
