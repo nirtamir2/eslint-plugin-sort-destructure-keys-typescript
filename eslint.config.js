@@ -9,9 +9,25 @@ export default nirtamir2(
   {
     type: "lib",
   },
-  {
-    ignores: ["vendor"],
-  },
+  [
+    {
+      ignores: ["vendor"],
+    },
+    {
+      rules: {
+        "sonarjs/cognitive-complexity": "off",
+        "sonarjs/no-empty-test-file": "off",
+      },
+    },
+    {
+      // TODO: ignore those rules on markdown files only
+      ignores: ["src/rules/sort-destructure-keys-by-type.md"],
+      // rules: {
+      //   "sonarjs/no-unused-vars": "off",
+      //   "sonarjs/no-dead-store": "off",
+      // },
+    },
+  ],
 ).removeRules(["unicorn/no-empty-file"]);
 // replace local config
 // .onResolved((configs) => {

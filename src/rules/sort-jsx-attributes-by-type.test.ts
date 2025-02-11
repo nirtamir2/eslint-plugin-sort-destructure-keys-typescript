@@ -1,8 +1,8 @@
 import typescriptEslintParser from "@typescript-eslint/parser";
+import { isCI } from "ci-info";
 import { any as tsx } from "code-tag";
 import { run } from "./_test";
 import rule, { RULE_NAME } from "./sort-jsx-attributes-by-type";
-import {isCI} from "ci-info"
 
 run({
   name: RULE_NAME,

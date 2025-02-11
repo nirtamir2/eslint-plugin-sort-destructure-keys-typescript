@@ -171,11 +171,13 @@ export default createEslintRule<Options, MessageIds>({
         "`includeJSXLowercaseTags: true` cannot be used with `componentNameRegex`. It use to override the default behavior of `componentNameRegex`",
       );
     }
+    const defaultRegex = options.includeJSXLowercaseTags
+      ? MATCH_ALL_REGEX
+      : MATCH_START_WITH_UPPERCASE_LETTER_REGEX;
+
     const componentsRegex = new RegExp(
       options.componentNameRegex == null
-        ? options.includeJSXLowercaseTags
-          ? MATCH_ALL_REGEX
-          : MATCH_START_WITH_UPPERCASE_LETTER_REGEX
+        ? defaultRegex
         : options.componentNameRegex,
     );
 
