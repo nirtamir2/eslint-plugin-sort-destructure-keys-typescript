@@ -1,6 +1,6 @@
 import { any as ts } from "code-tag";
 import { run } from "./_test";
-import rule, { RULE_NAME } from "./sort-pbject-properties-by-type";
+import rule, { RULE_NAME } from "./sort-object-properties-by-type";
 
 run({
   name: RULE_NAME,
