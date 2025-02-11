@@ -14,6 +14,7 @@ export default function config(
     rules: {
       [`${name}/sort-destructure-keys-by-type`]: ruleSeverity,
       [`${name}/sort-jsx-attributes-by-type`]: ruleSeverity,
+      [`${name}/sort-object-properties-by-type`]: ruleSeverity,
     },
   };
 }
