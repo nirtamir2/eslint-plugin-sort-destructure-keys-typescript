@@ -6,7 +6,6 @@ Enforces sorting of object properties based on their TypeScript type definitions
 
 🔧💡 This rule is automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix) and manually fixable by [editor suggestions](https://eslint.org/docs/latest/use/core-concepts#rule-suggestions).
 
-
 ## Rule Details
 
 This rule ensures that object properties are declared in the order specified by their TypeScript type definition.

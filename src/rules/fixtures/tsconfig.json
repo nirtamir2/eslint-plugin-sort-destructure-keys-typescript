@@ -3,8 +3,5 @@
     "target": "esnext",
     "strict": true
   },
-  "include": [
-    "file.ts",
-    "file.tsx"
-  ]
+  "include": ["file.ts", "file.tsx"]
 }

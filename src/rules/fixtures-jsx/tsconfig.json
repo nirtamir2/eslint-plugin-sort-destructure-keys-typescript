@@ -4,7 +4,5 @@
     "types": [], // Important - because else the code will include react and react-dom types
     "strict": true
   },
-  "include": [
-    "file.tsx"
-  ]
+  "include": ["file.tsx"]
 }

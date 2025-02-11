@@ -59,7 +59,9 @@ function calculateTypeDeclarationOrder({
   const typeDeclarationsOrder: Array<string> = [];
   const typeName = type.symbol?.escapedName;
   if (
-    typeName == null || type.symbol.escapedName === "__type"
+    typeName == null ||
+    // eslint-disable-next-line eqeqeq
+    type.symbol.escapedName == "__type"
       ? options.includeAnonymousType
       : options.typeNameRegex == null ||
         new RegExp(options.typeNameRegex).test(typeName)

@@ -1,4 +1,6 @@
 import nirtamir2 from "@nirtamir2/eslint-config";
+import sortDestructureKeysConfig from "eslint-plugin-sort-destructure-keys-typescript/config";
+import typescriptEslintParser from "@typescript-eslint/parser";
 
 // import { tsImport } from "tsx/esm/api";
 // const local = await tsImport("./src/index.ts", import.meta.url).then(
@@ -8,10 +10,11 @@ import nirtamir2 from "@nirtamir2/eslint-config";
 export default nirtamir2(
   {
     type: "lib",
+    typescript: false,
   },
   [
     {
-      ignores: ["vendor"],
+      ignores: ["vendor", "**/*.md"],
     },
     {
       rules: {
@@ -26,6 +29,21 @@ export default nirtamir2(
       //   "sonarjs/no-unused-vars": "off",
       //   "sonarjs/no-dead-store": "off",
       // },
+    },
+    {
+      files: ["src/**/*.ts", "src/**/*.tsx"],
+      // set up typescript-eslint
+      languageOptions: {
+        parser: typescriptEslintParser,
+        parserOptions: {
+          project: true,
+          tsconfigRootDir: import.meta.dirname,
+        },
+      },
+    },
+    {
+      files: ["src/**/*.ts", "src/**/*.tsx"],
+      ...sortDestructureKeysConfig(),
     },
   ],
 ).removeRules(["unicorn/no-empty-file"]);
