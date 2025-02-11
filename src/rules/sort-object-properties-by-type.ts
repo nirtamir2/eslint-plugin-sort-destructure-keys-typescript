@@ -186,20 +186,7 @@ export default createEslintRule<Options, MessageIds>({
       description: "Sort destructuring keys based on type order",
     },
     fixable: "code",
-    schema: [
-      {
-        type: "object",
-        properties: {
-          typeNameRegex: {
-            type: "string",
-          },
-          includeAnonymousType: {
-            type: "boolean",
-          },
-        },
-        additionalProperties: false,
-      },
-    ],
+    schema: [],
     messages: {
       sort: `Expected object keys to be sorted order by type order. Expected \`{{first}}\` to be before \`{{second}}\`.`,
     },
