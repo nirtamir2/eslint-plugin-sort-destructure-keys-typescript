@@ -3,6 +3,7 @@ import type { TSESTree } from "@typescript-eslint/types";
 import { AST_NODE_TYPES, ESLintUtils } from "@typescript-eslint/utils";
 import type * as TSESLint from "@typescript-eslint/utils/ts-eslint";
 import type ts from "typescript";
+import { TypeFlags } from "typescript";
 import { createEslintRule } from "../utils";
 
 export const RULE_NAME = "sort-object-properties-by-type";
@@ -89,7 +90,14 @@ function handleObjectExpression({
   objectExpression: TSESTree.ObjectExpression;
   context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
 }) {
-  const order = typeChecker.getPropertiesOfType(type).map((a) => a.getName());
+  const order = (type.isUnionOrIntersection() ? type.types : [type]).flatMap(
+    (type) => {
+      if (type.getFlags() !== TypeFlags.Object) {
+        return [];
+      }
+      return typeChecker.getPropertiesOfType(type).map((a) => a.getName());
+    },
+  );
 
   const identifiers: Array<TSESTree.Identifier> = [];
 

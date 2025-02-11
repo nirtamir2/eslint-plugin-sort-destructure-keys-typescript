@@ -150,5 +150,15 @@ run({
       `,
       errors: [{ messageId: "sort" }, { messageId: "sort" }],
     },
+    {
+      description: "basic object with type of union",
+      code: ts`
+        const res: { a: string; b: string } | string = { b: "2", a: "1" };
+      `,
+      output: ts`
+        const res: { a: string; b: string } | string = { a: "1", b: "2" };
+      `,
+      errors: [{ messageId: "sort" }],
+    },
   ],
 });
