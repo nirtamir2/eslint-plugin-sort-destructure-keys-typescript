@@ -109,10 +109,6 @@ function handleObjectExpression({
           if (property.key.type !== AST_NODE_TYPES.Identifier) {
             continue;
           }
-          const propertySymbol = type.getProperty(property.key.name);
-          if (propertySymbol == null) {
-            continue;
-          }
 
           const propertyType = getTypeOfPropertyOfName(
             typeChecker,

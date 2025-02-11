@@ -80,5 +80,29 @@ run({
       `,
       errors: [{ messageId: "sort" }],
     },
+    {
+      description: "basic array of multiple nested objects with type",
+      code: ts`
+        const res: Array<{
+          a: string;
+          b: string;
+          nested: { a: string; b: string };
+        }> = [{ nested: { b: "2", a: "1" }, a: "a", b: "b" }];
+      `,
+      output: ts`
+        const res: Array<{
+          a: string;
+          b: string;
+          nested: { a: string; b: string };
+        }> = [{ a: "a", b: "b", nested: { a: "1", b: "2" } }];
+      `,
+      errors: [{ messageId: "sort" }, { messageId: "sort" }],
+    },
+    {
+      description: "basic object with optional type",
+      code: ts` const res: { a?: string; b?: string, c?: string } = { c: "2", b: "1" }; `,
+      output: ts` const res: { a?: string; b?: string, c?: string } = { b: "1", c: "2" }; `,
+      errors: [{ messageId: "sort" }],
+    },
   ],
 });
