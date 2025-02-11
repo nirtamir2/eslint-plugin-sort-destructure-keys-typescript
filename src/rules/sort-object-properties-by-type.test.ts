@@ -130,5 +130,25 @@ run({
         { messageId: "sort" },
       ],
     },
+    {
+      description: "basic array with optional properties without type",
+      code: ts`
+        const res = [
+          { a: "1", b: "2" },
+          { b: "1", c: "1" },
+          { c: "2", a: "1" },
+          { c: "2", a: "1", b: "2" },
+        ];
+      `,
+      output: ts`
+        const res = [
+          { a: "1", b: "2" },
+          { b: "1", c: "1" },
+          { a: "1", c: "2" },
+          { a: "1", b: "2", c: "2" },
+        ];
+      `,
+      errors: [{ messageId: "sort" }, { messageId: "sort" }],
+    },
   ],
 });
