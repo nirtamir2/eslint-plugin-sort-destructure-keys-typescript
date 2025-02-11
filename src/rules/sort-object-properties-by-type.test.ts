@@ -160,5 +160,23 @@ run({
       `,
       errors: [{ messageId: "sort" }],
     },
+    {
+      description: "basic array with type of union of objects",
+      code: ts`
+        const res: Array<{ a: string; b: string } | { b: string; c: string }> =
+          [
+            { b: "2", a: "1" },
+            { c: "2", b: "1" },
+          ];
+      `,
+      output: ts`
+        const res: Array<{ a: string; b: string } | { b: string; c: string }> =
+          [
+            { a: "1", b: "2" },
+            { b: "1", c: "2" },
+          ];
+      `,
+      errors: [{ messageId: "sort" }, { messageId: "sort" }],
+    },
   ],
 });
