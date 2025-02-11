@@ -100,9 +100,35 @@ run({
     },
     {
       description: "basic object with optional type",
-      code: ts` const res: { a?: string; b?: string, c?: string } = { c: "2", b: "1" }; `,
-      output: ts` const res: { a?: string; b?: string, c?: string } = { b: "1", c: "2" }; `,
+      code: ts`
+        const res: { a?: string; b?: string; c?: string } = { c: "2", b: "1" };
+      `,
+      output: ts`
+        const res: { a?: string; b?: string; c?: string } = { b: "1", c: "2" };
+      `,
       errors: [{ messageId: "sort" }],
+    },
+    {
+      description: "basic array with optional type",
+      code: ts`
+        const res: Array<{ a?: string; b?: string; c?: string }> = [
+          { b: "2", a: "1" },
+          { c: "2", a: "1" },
+          { c: "2", a: "1", b: "2" },
+        ];
+      `,
+      output: ts`
+        const res: Array<{ a?: string; b?: string; c?: string }> = [
+          { a: "1", b: "2" },
+          { a: "1", c: "2" },
+          { a: "1", b: "2", c: "2" },
+        ];
+      `,
+      errors: [
+        { messageId: "sort" },
+        { messageId: "sort" },
+        { messageId: "sort" },
+      ],
     },
   ],
 });
