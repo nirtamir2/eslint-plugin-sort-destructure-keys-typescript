@@ -56,7 +56,8 @@
     "eslint": "*"
   },
   "dependencies": {
-    "@antfu/utils": "^0.7.10"
+    "@antfu/utils": "^0.7.10",
+    "@typescript-eslint/type-utils": "^8.24.0"
   },
   "devDependencies": {
     "@antfu/ni": "^0.22.0",
