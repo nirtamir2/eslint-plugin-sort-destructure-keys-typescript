@@ -1,5 +1,5 @@
+import { getTypeOfPropertyOfName } from "@typescript-eslint/type-utils";
 import type { TSESTree } from "@typescript-eslint/types";
-import type { ParserServicesWithTypeInformation } from "@typescript-eslint/utils";
 import { AST_NODE_TYPES, ESLintUtils } from "@typescript-eslint/utils";
 import type * as TSESLint from "@typescript-eslint/utils/ts-eslint";
 import type ts from "typescript";
@@ -78,29 +78,19 @@ function reportError({
   });
 }
 
-function getTypeOrder({
-  services,
-  objectExpression,
-  typeChecker,
-}: {
-  services: ParserServicesWithTypeInformation;
-  objectExpression: TSESTree.ObjectExpression;
-  typeChecker: ts.TypeChecker;
-}) {
-  const tsNode = services.esTreeNodeToTSNodeMap.get(objectExpression.parent);
-  const type = typeChecker.getTypeAtLocation(tsNode);
-  return typeChecker.getPropertiesOfType(type).map((a) => a.getName());
-}
-
 function handleObjectExpression({
+  typeChecker,
+  type,
   objectExpression,
-  order,
   context,
 }: {
+  type: ts.Type;
+  typeChecker: ts.TypeChecker;
   objectExpression: TSESTree.ObjectExpression;
-  order: Array<string>;
   context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
 }) {
+  const order = typeChecker.getPropertiesOfType(type).map((a) => a.getName());
+
   const identifiers: Array<TSESTree.Identifier> = [];
 
   for (const property of objectExpression.properties) {
@@ -115,6 +105,32 @@ function handleObjectExpression({
         ) {
           identifiers.push(property.key);
         }
+        if (property.value.type === AST_NODE_TYPES.ObjectExpression) {
+          if (property.key.type !== AST_NODE_TYPES.Identifier) {
+            continue;
+          }
+          const propertySymbol = type.getProperty(property.key.name);
+          if (propertySymbol == null) {
+            continue;
+          }
+
+          const propertyType = getTypeOfPropertyOfName(
+            typeChecker,
+            type,
+            property.key.name,
+          );
+
+          if (propertyType == null) {
+            continue;
+          }
+
+          handleObjectExpression({
+            type: propertyType,
+            typeChecker,
+            objectExpression: property.value,
+            context,
+          });
+        }
       }
     }
   }
@@ -128,36 +144,31 @@ function handleObjectExpression({
 }
 
 function handleArrayExpression({
-  services,
-  arrayExpression,
+  type,
   typeChecker,
+  arrayExpression,
   context,
 }: {
-  services: ParserServicesWithTypeInformation;
-  arrayExpression: TSESTree.ArrayExpression;
+  type: ts.Type;
   typeChecker: ts.TypeChecker;
+  arrayExpression: TSESTree.ArrayExpression;
   context: Readonly<TSESLint.RuleContext<MessageIds, Options>>;
 }) {
-  const tsNode = services.esTreeNodeToTSNodeMap.get(arrayExpression.parent);
-  const arrayType = typeChecker.getTypeAtLocation(tsNode);
-  const type = arrayType.getNumberIndexType();
-  if (type == null) {
-    return;
-  }
-  const propsTypePropertiesOrder = typeChecker
-    .getPropertiesOfType(type)
-    .map((a) => a.getName());
-
   for (const property of arrayExpression.elements) {
     if (property == null) {
       continue;
     }
 
     if (property.type === AST_NODE_TYPES.ObjectExpression) {
+      const objectType = type.getNumberIndexType();
+      if (objectType == null) {
+        return;
+      }
       handleObjectExpression({
         objectExpression: property,
         context,
-        order: propsTypePropertiesOrder,
+        typeChecker,
+        type: objectType,
       });
     }
   }
@@ -199,26 +210,25 @@ export default createEslintRule<Options, MessageIds>({
           if (declaration.init == null) {
             continue;
           }
+          const tsNode = services.esTreeNodeToTSNodeMap.get(declaration);
+          const rootType = typeChecker.getTypeAtLocation(tsNode);
+
           switch (declaration.init.type) {
             case AST_NODE_TYPES.ObjectExpression: {
-              const propsTypePropertiesOrder = getTypeOrder({
-                services,
-                objectExpression: declaration.init,
-                typeChecker,
-              });
               handleObjectExpression({
+                type: rootType,
+                typeChecker,
                 context,
                 objectExpression: declaration.init,
-                order: propsTypePropertiesOrder,
               });
               break;
             }
             case AST_NODE_TYPES.ArrayExpression: {
               handleArrayExpression({
-                services,
                 arrayExpression: declaration.init,
-                typeChecker,
                 context,
+                type: rootType,
+                typeChecker,
               });
               break;
             }
