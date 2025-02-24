@@ -7,7 +7,7 @@
   "author": "Nir Tamir <nirtamir2@gmail.com>",
   "license": "MIT",
   "funding": "https://github.com/sponsors/nirtamir2",
-  "homepage": "https://github.com/nirtamir2/eslint-plugin-nirtamir2#readme",
+  "homepage": "https://github.com/nirtamir2/eslint-plugin-sort-destructure-keys-typescript#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nirtamir2/eslint-plugin-sort-destructure-keys-typescript.git"
@@ -93,9 +93,6 @@
     "typescript": "^5.7.3",
     "unbuild": "^3.3.1",
     "vitest": "^3.0.5"
-  },
-  "resolutions": {
-    "eslint-plugin-nirtamir2": "workspace:*"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"
