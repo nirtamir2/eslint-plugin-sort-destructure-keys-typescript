@@ -18,14 +18,17 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
+      "require": "./dist/index.cjs",
       "default": "./dist/index.mjs"
     },
     "./config": {
       "types": "./dist/config.d.mts",
+      "require": "./dist/config.cjs",
       "default": "./dist/config.mjs"
     },
     "./types": {
       "types": "./dist/types.d.mts",
+      "require": "./dist/types.cjs",
       "default": "./dist/types.mjs"
     }
   },
